@@ -16,12 +16,13 @@ const ChatGPT = () => {
   const sendGptRequest = async (inputText, improvementType) => {
     const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
     const apiUrl =
-      "https://api.openai.com/v1/engines/text-davinci-003/completions";
+      "https://api.openai.com/v1/completions";
 
     try {
       const response = await axios.post(
         apiUrl,
         {
+          model: "gpt-3.5-turbo-instruct",
           prompt: `Make this text ${improvementType} and correct all spelling mistakes : ${inputText}`,
           max_tokens: 50,
         },
