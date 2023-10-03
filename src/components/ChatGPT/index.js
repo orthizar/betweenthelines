@@ -5,6 +5,9 @@ import { GoCopy } from "react-icons/go";
 import { RiDeleteBin6Line } from "react-icons/ri";
 // import { GrammarlyEditorPlugin } from "@grammarly/editor-sdk-react";
 import axios from "axios";
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
+
 
 const ChatGPT = () => {
   const [gptResponse, setGptResponse] = useState(null);
@@ -78,15 +81,23 @@ const ChatGPT = () => {
     });
   };
 
+  var modules = {
+    toolbar: null,
+
+  }
   return (
     <div>
       <div>
         <div>
-          <textarea
-            onChange={(event) => setInputValue(event.target.value)}
+          <ReactQuill
+            theme="snow"
             placeholder="Enter your text here"
             value={inputValue}
-          ></textarea>
+            onChange={(value, delta, source, editor) => {
+              setInputValue(value)
+            }}
+            modules={modules}
+          />
           <div>
             <div>
               <ButtonGroup />
