@@ -1,5 +1,3 @@
-import "./styles.css";
-
 import React, { useState } from "react";
 
 import { BsCheckLg } from "react-icons/bs";
@@ -81,18 +79,18 @@ const ChatGPT = () => {
 
   return (
     <div>
-      <div className="box">
-        <div className="rectangle">
+      <div>
+        <div>
           <textarea
             onChange={(event) => setInputValue(event.target.value)}
             placeholder="Enter your text here"
             value={inputValue}
           ></textarea>
-          <div className="greyBox">
-            <div className="buttonContainer">
+          <div>
+            <div>
               <ButtonGroup />
             </div>
-            <div className="iconContainer">
+            <div>
               {isCopied ? <BsCheckLg /> : <GoCopy onClick={handleCopy} />}
               <RiDeleteBin6Line onClick={handleDelete} />
             </div>
