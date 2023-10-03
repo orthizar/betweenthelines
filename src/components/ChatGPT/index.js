@@ -15,6 +15,7 @@ const ChatGPT = () => {
   const [formattedValue, setFormattedValue] = useState();
   const [isCopied, setIsCopied] = useState(false);
   const [gptCorrections, setGptCorrections] = useState([]);
+  const editorRef = React.useRef(null);
 
   const sendGptRequest = async (inputText, improvementType) => {
     const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
@@ -26,7 +27,7 @@ const ChatGPT = () => {
           apiUrl,
           {
             model: "gpt-3.5-turbo-instruct",
-            prompt: 'Task: Correct all mistakes in the text. Output: A json object with an array of all the corrections. Allowed types are "style", "spelling", "grammar". Use format with character range: { "corrections": [ { "index": 0, "length": 5, "correction": "Hello", "type": "spelling", "explanation": "Please check spelling." } ] }. Text: \n"' + inputText + '"\n\nDo not output anything else than JSON. Valid JSON Output: \n',
+            prompt: 'Please output a json object with an array of all the mistakes in the text. Allowed types are "style", "spelling", "grammar". Use format with character range: { "corrections": [ { "index": 0, "length": 5, "correction": "Hello", "type": "spelling", "explanation": "Typo, change to \'Hello\'" } ] }. Text: \n"' + inputText + '"\n\nThe array should be empty if there are no mistakes. Do not output anything else than JSON. Valid JSON Output: \n',
             max_tokens: 200,
           },
           {
@@ -40,11 +41,15 @@ const ChatGPT = () => {
         console.log(responseData);
         console.log(JSON.parse(responseData));
         setGptCorrections(JSON.parse(responseData).corrections);
+        // format quill editor text with corrections
+        JSON.parse(responseData).corrections.forEach(correction => {
+          editorRef.current.editor.formatText(correction.index, correction.length, { "color": "red" });
+        });
       } catch (error) {
         console.error("Fehler bei der API-Anfrage:", error);
       }
     }
-      else {
+    else {
       try {
         const response = await axios.post(
           apiUrl,
@@ -113,17 +118,34 @@ const ChatGPT = () => {
     toolbar: null,
 
   }
+  const getCorrection = (index) => {
+    for (var i = 0; i < gptCorrections.length; i++) {
+      if (index >= gptCorrections[i].index && index <= gptCorrections[i].index + gptCorrections[i].length) {
+        return gptCorrections[i];
+      }
+    }
+    return null;
+  }
   return (
     <div>
       <div>
         <div>
           <ReactQuill
+            ref={editorRef}
             theme="snow"
             placeholder="Enter your text here"
             value={formattedValue}
             onChange={(value, delta, source, editor) => {
-              var plainText = editor.getText();
-              setInputValue(plainText);
+              console.log(value, source);
+              if (source === "user") {
+                const correction = getCorrection(delta.ops[0].retain)
+                console.log(correction);
+                if (correction != null) {
+                  editorRef.current.editor.removeFormat(correction.index, correction.length)
+                }
+              } else {
+                setFormattedValue(value);
+              }
             }}
             modules={modules}
           />
