@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, {useEffect, useState} from "react";
 
 import { BsCheckLg } from "react-icons/bs";
 import { GoCopy } from "react-icons/go";
@@ -41,10 +41,10 @@ const ChatGPT = () => {
   };
 
   const buttons = [
-    { id: "improve-button", label: "Improve", color: "#5f76a5" },
-    { id: "professional-button", label: "Professional", color: "#4c7937" },
-    { id: "colloquially-button", label: "Colloquially", color: "#794e37" },
-    { id: "persuasive-button", label: "Persuasive", color: "#374c79" },
+    { id: "improve-button", label: "Improve", color: "bg-blue-600 hover:bg-blue-700" },
+    { id: "professional-button", label: "Professional", color: "bg-green-600 hover:bg-green-700" },
+    { id: "colloquially-button", label: "Colloquially", color: "bg-orange-600 hover:bg-orange-700" },
+    { id: "persuasive-button", label: "Persuasive", color: "bg-indigo-600 hover:bg-indigo-700" },
   ];
 
   const ButtonGroup = () =>
@@ -79,26 +79,40 @@ const ChatGPT = () => {
   };
 
   return (
-    <div>
-      <div>
-        <div>
+      <div className="p-12 bg-gray-100 min-h-screen flex items-center justify-center">
+        <div className="bg-white shadow-xl p-8 rounded-lg w-4/5 max-w-4xl flex flex-col">
+          <div className="mb-6 flex-grow">
           <textarea
-            onChange={(event) => setInputValue(event.target.value)}
-            placeholder="Enter your text here"
-            value={inputValue}
+              onChange={(event) => setInputValue(event.target.value)}
+              placeholder="Enter your text here"
+              value={inputValue}
+              className="w-full p-4 border rounded-md resize-none text-lg"
+              rows="7"
           ></textarea>
-          <div>
-            <div>
-              <ButtonGroup />
+          </div>
+          <div className="flex justify-between items-center">
+            <div className="space-x-4">
+              {buttons.map((button) => (
+                  <button
+                      key={button.id}
+                      onClick={(event) => handleSubmit(event, button.label)}
+                      className={`text-white py-2 px-5 rounded text-lg ${button.color}`}
+                  >
+                    {button.label}
+                  </button>
+              ))}
             </div>
-            <div>
-              {isCopied ? <BsCheckLg /> : <GoCopy onClick={handleCopy} />}
-              <RiDeleteBin6Line onClick={handleDelete} />
+            <div className="space-x-4 flex items-center">
+              {isCopied ? (
+                  <BsCheckLg className="text-green-600" size={28} />
+              ) : (
+                  <GoCopy className="text-blue-600 cursor-pointer" size={28} onClick={handleCopy} />
+              )}
+              <RiDeleteBin6Line className="text-red-600 cursor-pointer" size={28} onClick={handleDelete} />
             </div>
           </div>
         </div>
       </div>
-    </div>
   );
 };
 
