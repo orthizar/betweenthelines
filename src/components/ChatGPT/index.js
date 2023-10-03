@@ -14,7 +14,7 @@ const ChatGPT = () => {
   const [isCopied, setIsCopied] = useState(false);
 
   const sendGptRequest = async (inputText, improvementType) => {
-    const apiKey = "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";
+    const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
     const apiUrl =
       "https://api.openai.com/v1/engines/text-davinci-003/completions";
 
