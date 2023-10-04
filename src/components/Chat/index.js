@@ -4,24 +4,29 @@ import { sendChatGptRequest } from "../Helpers/request";
 
 const Chat = ({ getEditorText, setFormattedValue }) => {
   const [chatMessages, setChatMessages] = useState([
-    { id: 1, author: "User", text: "Hello, how may I help you?" },
+    { id: 1, author: "Bot", text: "Hello, how may I help you?" },
   ]);
 
   const [message, setMessage] = useState("");
 
-  const isMyMessage = (author) => author === "Me";
+  const isMyMessage = (author) => author === "User";
 
   const sendMessage = async () => {
     if (message.trim() !== "") {
-      const newMessage = {
-        id: chatMessages.length + 1,
-        author: "Ich",
-        text: message,
-      };
       const gptResponse = await sendChatGptRequest(message, getEditorText());
       console.log(gptResponse);
-      setFormattedValue(gptResponse);
-      setChatMessages([...chatMessages, newMessage]);
+      const gptResponseChat = gptResponse.split("---")[0];
+      const gptResponseEditor = gptResponse.split("---")[1];
+      setChatMessages([...chatMessages, {
+        id: chatMessages.length + 1,
+        author: "User",
+        text: message,
+      }, {
+        id: chatMessages.length + 2,
+        author: "Bot",
+        text: gptResponseChat,
+      }]);
+      setFormattedValue(gptResponseEditor);
       setMessage("");
     }
   };
@@ -35,11 +40,10 @@ const Chat = ({ getEditorText, setFormattedValue }) => {
         {chatMessages.map((chatMessage) => (
           <div
             key={chatMessage.id}
-            className={`p-3 rounded-lg mb-3 ${
-              isMyMessage(chatMessage.author)
-                ? "bg-blue-200 text-right"
-                : "bg-gray-200"
-            }`}
+            className={`p-3 rounded-lg mb-3 ${isMyMessage(chatMessage.author)
+              ? "bg-blue-200 text-right"
+              : "bg-gray-200"
+              }`}
           >
             <p>{chatMessage.text}</p>
           </div>
