@@ -31,9 +31,7 @@ export const improvementPrompt = (improvementType, text) => {
 
 export const chatPrompt = (chatText, text) => {
     return `
-    User request:
-
     This is my current Context: """${text}""", Please do this Command: """${chatText}""",
     
-    Output should contain just the Mail body, followed by a "---" and a quick sum of the text in one quick sentece.`;
+    Output should contain just the body of the Mail body, followed by a "---"  and sone sentence saying what you did `;
 }

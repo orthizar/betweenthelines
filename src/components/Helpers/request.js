@@ -12,7 +12,7 @@ export const sendChatGptRequest = async (inputChat, editorText) => {
       {
         model: "gpt-3.5-turbo-instruct",
         prompt: chatPrompt(inputChat, editorText),
-        max_tokens: 200,
+        max_tokens: 999,
       },
       {
         headers: {
