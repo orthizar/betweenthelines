@@ -57,6 +57,9 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
         placeholder="Enter your text here"
         value={formattedValue}
         className="w-full p-4 border rounded-md resize-none text-lg"
+        formats={
+          ["color", "background"]
+        }
         onChange={(value, delta, source, editor) => {
           console.log(value, source);
           if (source === "user") {
@@ -86,8 +89,10 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
                       indexDelta -= op.delete;
                     }
                   });
-                  item.start -= indexDelta;
-                  item.end -= indexDelta;
+                  if (item.start >= index) {
+                    item.start -= indexDelta;
+                    item.end -= indexDelta;
+                  }
                   return item;
                 })
               );
