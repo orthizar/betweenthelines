@@ -47,13 +47,15 @@ const Chat = ({ getEditorText, setFormattedValue }) => {
                     </div>
                 )}
               </div>
-              <div
-                  className={`relative p-3 rounded-lg ${isMyMessage(chatMessage.author)
-                      ? "bg-blue-200 text-right mr-1"  // Added right margin for user's messages
-                      : "bg-gray-200 ml-1"             // Added left margin for other messages
-                  }`}
-              >
-                <p>{chatMessage.text}</p>
+              <div className={'max-w-[15rem]'}>
+                <div
+                    className={`relative p-3 rounded-lg ${isMyMessage(chatMessage.author)
+                        ? "bg-blue-200 text-right mr-1"  // Right-aligned for user's messages
+                        : "bg-gray-200 ml-1"             // Left-aligned for other messages
+                    }`}
+                >
+                    <p>{chatMessage.text}</p>
+                </div>
               </div>
             </div>
         ))}
