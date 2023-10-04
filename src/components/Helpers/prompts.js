@@ -29,5 +29,12 @@ export const improvementPrompt = (improvementType, text) => {
     return `Make this text ${improvementType} and correct all spelling mistakes : ${text}`;
 }
 export const chatPrompt = (chatText, text) => {
-    return `This is my current Context: ${text}, Please do this Command: ${chatText}, give me the Mail Body back. Return the Context if you do not understand the command.`;
+    return `
+    User request:
+    """${chatText}"""
+    Edit the Editor text per user's request. Return the Editor text as is, if you do not understand the user's request.
+    Output should contain your answer to the user, followed by a "---" and the text to be displayed in the editor.
+    Editor text:
+    """${text}"""
+    Output:`;
 }
