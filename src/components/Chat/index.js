@@ -2,25 +2,25 @@ import React, { useState } from "react";
 
 import { sendChatGptRequest } from "../Helpers/request";
 
-const Chat = ({ setFormattedValue }) => {
+const Chat = ({ getEditorText, setFormattedValue }) => {
   const [chatMessages, setChatMessages] = useState([
-    { id: 1, author: "User", text: "Hallo! Wie geht es Ihnen?" },
-    { id: 2, author: "Ich", text: "Mir geht es gut. Danke!" },
+    { id: 1, author: "User", text: "Hello, how may I help you?" },
   ]);
 
   const [message, setMessage] = useState("");
 
   const isMyMessage = (author) => author === "Me";
 
-  const sendMessage = () => {
+  const sendMessage = async () => {
     if (message.trim() !== "") {
       const newMessage = {
         id: chatMessages.length + 1,
         author: "Ich",
         text: message,
       };
-
-      setFormattedValue(sendChatGptRequest(newMessage.text));
+      const gptResponse = await sendChatGptRequest(message, getEditorText());
+      console.log(gptResponse);
+      setFormattedValue(gptResponse);
       setChatMessages([...chatMessages, newMessage]);
       setMessage("");
     }

@@ -2,7 +2,7 @@ import { chatPrompt, correctionsPrompt, improvementPrompt } from "./prompts";
 
 import axios from "axios";
 
-export const sendChatGptRequest = async (inputChat, editorRef) => {
+export const sendChatGptRequest = async (inputChat, editorText) => {
   const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
   const apiUrl = "https://api.openai.com/v1/completions";
 
@@ -11,7 +11,7 @@ export const sendChatGptRequest = async (inputChat, editorRef) => {
       apiUrl,
       {
         model: "gpt-3.5-turbo-instruct",
-        prompt: chatPrompt(inputChat, editorRef.current.editor.getText()),
+        prompt: chatPrompt(inputChat, editorText),
         max_tokens: 200,
       },
       {
