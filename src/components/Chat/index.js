@@ -36,17 +36,25 @@ const Chat = ({ getEditorText, setFormattedValue }) => {
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold">Chat</h2>
       </div>
-      <div className="mb-6 flex-grow overflow-y-auto">
+      <div className="mb-6 flex-grow overflow-y-auto px-4"> {/* Added padding on the x-axis to the main container */}
         {chatMessages.map((chatMessage) => (
-          <div
-            key={chatMessage.id}
-            className={`p-3 rounded-lg mb-3 ${isMyMessage(chatMessage.author)
-              ? "bg-blue-200 text-right"
-              : "bg-gray-200"
-              }`}
-          >
-            <p>{chatMessage.text}</p>
-          </div>
+            <div key={chatMessage.id} className={`flex flex-col mb-3 ${isMyMessage(chatMessage.author) ? "items-end" : "items-start"}`}>
+              <div className={`text-xs mb-1 ${isMyMessage(chatMessage.author) ? "text-gray-600 mr-1" : "text-gray-600 ml-1"}`}>
+                {!isMyMessage(chatMessage.author) && (
+                    <div className="text-xs mb-1 text-gray-600">
+                      {chatMessage.author}
+                    </div>
+                )}
+              </div>
+              <div
+                  className={`relative p-3 rounded-lg ${isMyMessage(chatMessage.author)
+                      ? "bg-blue-200 text-right mr-1"  // Added right margin for user's messages
+                      : "bg-gray-200 ml-1"             // Added left margin for other messages
+                  }`}
+              >
+                <p>{chatMessage.text}</p>
+              </div>
+            </div>
         ))}
       </div>
       <div className="mt-auto">
