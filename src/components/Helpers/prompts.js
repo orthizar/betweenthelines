@@ -28,13 +28,12 @@ export const correctionsPrompt = (text) => {
 export const improvementPrompt = (improvementType, text) => {
     return `Make this text ${improvementType} and correct all spelling mistakes : ${text}`;
 }
+
 export const chatPrompt = (chatText, text) => {
     return `
     User request:
-    """${chatText}"""
-    Edit the Editor text per user's request. Return the Editor text as is, if you do not understand the user's request.
-    Output should contain your answer to the user, followed by a "---" and the text to be displayed in the editor.
-    Editor text:
-    """${text}"""
-    Output:`;
+
+    This is my current Context: """${text}""", Please do this Command: """${chatText}""",
+    
+    Output should contain just the Mail body, followed by a "---" and a quick sum of the text in one quick sentece.`;
 }

@@ -14,9 +14,8 @@ const Chat = ({ getEditorText, setFormattedValue }) => {
   const sendMessage = async () => {
     if (message.trim() !== "") {
       const gptResponse = await sendChatGptRequest(message, getEditorText());
-      console.log(gptResponse);
-      const gptResponseChat = gptResponse.split("---")[0];
-      const gptResponseEditor = gptResponse.split("---")[1];
+      const gptResponseChat = gptResponse.split("---")[1];
+      const gptResponseEditor = gptResponse.split("---")[0];
       setChatMessages([...chatMessages, {
         id: chatMessages.length + 1,
         author: "User",
@@ -26,10 +25,12 @@ const Chat = ({ getEditorText, setFormattedValue }) => {
         author: "Bot",
         text: gptResponseChat,
       }]);
-      setFormattedValue(gptResponseEditor);
+      console.log(gptResponseEditor.replace(/(?:\r\n|\r|\n|\\n)/g, '<br>'));
+      setFormattedValue(gptResponseEditor.replace(/(?:\r\n|\r|\n|\\n)/g, '<br>'));
       setMessage("");
     }
   };
+
 
   return (
     <div className="bg-white shadow-xl p-8 rounded-lg w-2/5 flex flex-col mr-6 max-h-[37rem] overflow-y-auto">
