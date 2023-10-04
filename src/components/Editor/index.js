@@ -4,26 +4,32 @@ import React, { useState } from "react";
 
 import ReactQuill from "react-quill";
 
+import Typo from "typo-js";
+var lang = "en_US";
+const dictionary = new Typo(lang, false, false, { dictionaryPath: "typo/dictionaries" });
+
 const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
-  const [gptCorrections, setGptCorrections] = useState([]);
+  const [spellCheckCorrections, setSpellCheckCorrections] = useState([]);
+
 
   const editorModules = {
     toolbar: null,
   };
 
-  const getCorrection = (index) => {
-    for (var i = 0; i < gptCorrections.length; i++) {
-      if (index >= gptCorrections[i].start && index <= gptCorrections[i].end) {
-        return gptCorrections[i];
+  const getSpellCheckCorrection = (index) => {
+    for (var i = 0; i < spellCheckCorrections.length; i++) {
+      if (index >= spellCheckCorrections[i].start && index <= spellCheckCorrections[i].end) {
+        return spellCheckCorrections[i];
       }
     }
     return null;
-  };
+  }
 
   const clearHighlighting = () => {
     editorRef.current.editor.removeFormat(
       0,
-      editorRef.current.editor.getLength() - 1
+      editorRef.current.editor.getLength() - 1,
+      "silent"
     );
   };
 
@@ -32,7 +38,8 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
       editorRef.current.editor.formatText(
         correction.start,
         correction.end - correction.start,
-        { color: "red" }
+        { color: "red" },
+        "silent"
       );
     });
   };
@@ -40,14 +47,38 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
   const selectCorrection = (correction) => {
     editorRef.current.editor.removeFormat(
       correction.start,
-      correction.end - correction.start
+      correction.end - correction.start,
+      "silent"
     );
     editorRef.current.editor.formatText(
       correction.start,
       correction.end - correction.start,
-      { background: "red" }
+      { background: "red" },
+      "silent"
     );
   };
+
+  const spellCheck = () => {
+    const text = editorRef.current.editor.getText();
+    const words = text.split(/[\n\s]/);
+    return words.map((word) => {
+      var cleanWord = word.replace(/\W/g, "");
+      var wordStart = word.indexOf(cleanWord);
+      if (wordStart === -1) {
+        cleanWord = word;
+        wordStart = 0;
+        const wordEnd = word.length;
+      } else {
+        const wordEnd = wordStart + cleanWord.length;
+      }
+      return !dictionary.check(cleanWord) && {
+        start: text.indexOf(word),
+        end: text.indexOf(word) + word.length,
+        word: cleanWord,
+      }
+    }).filter((word) => word);
+  }
+
 
   return (
     <div className="mb-6 flex-grow">
@@ -61,57 +92,28 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
           ["color", "background"]
         }
         onChange={(value, delta, source, editor) => {
-          console.log(value, source);
-          if (source === "user") {
-            const correction = getCorrection(delta.ops[0].retain);
-            console.log(correction);
-            if (correction != null) {
-              editorRef.current.editor.removeFormat(
-                correction.start,
-                correction.end - correction.start
-              );
-              // delete the correction and move all following corrections
-              setGptCorrections(
-                gptCorrections.filter((item) => item !== correction)
-              );
-              setGptCorrections(
-                gptCorrections.map((item) => {
-                  var index = 0;
-                  var indexDelta = 0;
-                  delta.ops.forEach((op) => {
-                    if (op.retain) {
-                      index += op.retain;
-                    } else if (op.insert) {
-                      index += op.insert.length;
-                      indexDelta += op.insert.length;
-                    } else if (op.delete) {
-                      index -= op.delete;
-                      indexDelta -= op.delete;
-                    }
-                  });
-                  if (item.start >= index) {
-                    item.start -= indexDelta;
-                    item.end -= indexDelta;
-                  }
-                  return item;
-                })
-              );
-            }
-          } else {
-            setFormattedValue(value);
+          if (source === "user" || source === "silent") {
+            const corrections = spellCheck();
+            setSpellCheckCorrections(corrections);
           }
+          setFormattedValue(value);
         }}
         onChangeSelection={(selection, source, editor) => {
-          console.log(selection, source);
-          if (source === "user") {
+          console.log(selection)
+          if (source === "user" || source === 'silent') {
             if (selection != null && selection.length === 0) {
-              const correction = getCorrection(selection.index);
+              const correction = getSpellCheckCorrection(selection.index);
               if (correction != null) {
+                clearHighlighting();
+                highlightCorrections(spellCheckCorrections);
                 selectCorrection(correction);
               } else {
                 clearHighlighting();
-                highlightCorrections(gptCorrections);
+                highlightCorrections(spellCheckCorrections);
               }
+            } else {
+              clearHighlighting();
+              highlightCorrections(spellCheckCorrections);
             }
           }
         }}
