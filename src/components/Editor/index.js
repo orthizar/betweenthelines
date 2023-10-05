@@ -64,16 +64,16 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
     return words.map((word) => {
       var cleanWord = word.replace(/\W/g, "");
       var wordStart = word.indexOf(cleanWord);
+      var wordEnd = word.length;
       if (wordStart === -1) {
         cleanWord = word;
         wordStart = 0;
-        const wordEnd = word.length;
       } else {
-        const wordEnd = wordStart + cleanWord.length;
+        wordEnd = wordStart + cleanWord.length;
       }
       return !dictionary.check(cleanWord) && {
         start: text.indexOf(word),
-        end: text.indexOf(word) + word.length,
+        end: text.indexOf(word) + wordEnd,
         word: cleanWord,
       }
     }).filter((word) => word);
