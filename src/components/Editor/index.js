@@ -47,7 +47,7 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
   };
 
   const selectCorrection = (correction) => {
-    if (correction != currentCorrection){
+    if (correction !== currentCorrection){
       editorRef.current.editor.removeFormat(
         correction.start,
         correction.end - correction.start,
