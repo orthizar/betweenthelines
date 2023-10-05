@@ -4,9 +4,14 @@ import React, { useState } from "react";
 
 import ReactQuill from "react-quill";
 
-import Typo from "typo-js";
-var lang = "en_US";
-const dictionary = new Typo(lang, false, false, { dictionaryPath: "typo/dictionaries" });
+import nspell from 'nspell';
+
+var lang = 'en_US';
+const aff = await fetch(`dictionaries/${lang}/${lang}.aff`).then((r) => r.text());
+const dic = await fetch(`dictionaries/${lang}/${lang}.dic`).then((r) => r.text());
+console.log(aff, dic)
+const spell = nspell({aff: aff, dic: dic});
+
 
 const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
   const [spellCheckCorrections, setSpellCheckCorrections] = useState([]);
@@ -47,7 +52,7 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
   };
 
   const selectCorrection = (correction) => {
-    if (correction !== currentCorrection){
+    if (correction !== currentCorrection) {
       editorRef.current.editor.removeFormat(
         correction.start,
         correction.end - correction.start,
@@ -84,7 +89,7 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
       } else {
         wordEnd = wordStart + cleanWord.length;
       }
-      return !dictionary.check(cleanWord) && {
+      return !spell.correct(cleanWord) && {
         start: text.indexOf(word),
         end: text.indexOf(word) + wordEnd,
         word: cleanWord,
@@ -93,7 +98,7 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
   }
 
   const getSuggestions = (correction) => {
-    const suggestions = dictionary.suggest(correction.word, 5);
+    const suggestions = spell.suggest(correction.word).slice(0, 5);
     return suggestions;
   }
   const handleSuggestionClick = (event, suggestion) => {
