@@ -47,19 +47,21 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
   };
 
   const selectCorrection = (correction) => {
-    editorRef.current.editor.removeFormat(
-      correction.start,
-      correction.end - correction.start,
-      "silent"
-    );
-    editorRef.current.editor.formatText(
-      correction.start,
-      correction.end - correction.start,
-      { background: "red" },
-      "silent"
-    );
-    setCurrentCorrection(correction);
-    setEditorSuggestions(getSuggestions(correction));
+    if (correction != currentCorrection){
+      editorRef.current.editor.removeFormat(
+        correction.start,
+        correction.end - correction.start,
+        "silent"
+      );
+      editorRef.current.editor.formatText(
+        correction.start,
+        correction.end - correction.start,
+        { background: "red" },
+        "silent"
+      );
+      setCurrentCorrection(correction);
+      setEditorSuggestions(getSuggestions(correction));
+    }
   };
 
   const deselectCorrection = () => {
@@ -131,7 +133,6 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
             ["color", "background"]
           }
           onChange={(value, delta, source, editor) => {
-            console.log(value);
             if (source === "user" || source === "silent") {
               const corrections = spellCheck();
               setSpellCheckCorrections(corrections);
@@ -139,7 +140,6 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
             setFormattedValue(value);
           }}
           onChangeSelection={(selection, source, editor) => {
-            console.log(selection)
             if (source === "user" || source === 'silent') {
               if (selection != null && selection.length === 0) {
                 const correction = getSpellCheckCorrection(selection.index);
