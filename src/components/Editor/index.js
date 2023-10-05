@@ -10,6 +10,8 @@ const dictionary = new Typo(lang, false, false, { dictionaryPath: "typo/dictiona
 
 const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
   const [spellCheckCorrections, setSpellCheckCorrections] = useState([]);
+  const [currentCorrection, setCurrentCorrection] = useState(null);
+  const [editorSuggestions, setEditorSuggestions] = useState([]);
 
 
   const editorModules = {
@@ -56,7 +58,16 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
       { background: "red" },
       "silent"
     );
+    setCurrentCorrection(correction);
+    setEditorSuggestions(getSuggestions(correction));
   };
+
+  const deselectCorrection = () => {
+    setEditorSuggestions([]);
+    setCurrentCorrection(null);
+  };
+
+
 
   const spellCheck = () => {
     const text = editorRef.current.editor.getText();
@@ -79,47 +90,78 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
     }).filter((word) => word);
   }
 
+  const getSuggestions = (correction) => {
+    const suggestions = dictionary.suggest(correction.word, 5);
+    return suggestions;
+  }
+  const handleSuggestionClick = (event, suggestion) => {
+    event.preventDefault();
+    const correction = currentCorrection;
+    const text = editorRef.current.editor.getText();
+    const newText = text.substring(0, correction.start) + suggestion + text.substring(correction.end);
+    editorRef.current.editor.setText(newText, "silent");
+    deselectCorrection();
+    clearHighlighting();
+    setSpellCheckCorrections(spellCheck());
+    highlightCorrections(spellCheckCorrections);
+  }
+
 
   return (
-    <div className="mb-6 flex-grow">
-      <ReactQuill
-        ref={editorRef}
-        theme="snow"
-        placeholder="Enter your text here"
-        value={formattedValue}
-        className="w-full p-4 border rounded-md resize-none text-lg"
-        formats={
-          ["color", "background"]
-        }
-        onChange={(value, delta, source, editor) => {
-          if (source === "user" || source === "silent") {
-            const corrections = spellCheck();
-            setSpellCheckCorrections(corrections);
+    <>
+      <div className="p-2 border rounded-md h-10">
+        {editorSuggestions.map((suggestion) => (
+          <button
+            key={suggestion}
+            onClick={(event) => handleSuggestionClick(event, suggestion)}
+            className={`text-black py-1 px-2 rounded text-sm w-1/5`}
+          >
+            {suggestion}
+          </button>
+        ))}
+      </div>
+      <div className="mb-6 flex-grow">
+        <ReactQuill
+          ref={editorRef}
+          theme="snow"
+          placeholder="Enter your text here"
+          value={formattedValue}
+          className="w-full h-full border rounded-md resize-none text-lg"
+          formats={
+            ["color", "background"]
           }
-          setFormattedValue(value);
-        }}
-        onChangeSelection={(selection, source, editor) => {
-          console.log(selection)
-          if (source === "user" || source === 'silent') {
-            if (selection != null && selection.length === 0) {
-              const correction = getSpellCheckCorrection(selection.index);
-              if (correction != null) {
-                clearHighlighting();
-                highlightCorrections(spellCheckCorrections);
-                selectCorrection(correction);
+          onChange={(value, delta, source, editor) => {
+            console.log(value);
+            if (source === "user" || source === "silent") {
+              const corrections = spellCheck();
+              setSpellCheckCorrections(corrections);
+            }
+            setFormattedValue(value);
+          }}
+          onChangeSelection={(selection, source, editor) => {
+            console.log(selection)
+            if (source === "user" || source === 'silent') {
+              if (selection != null && selection.length === 0) {
+                const correction = getSpellCheckCorrection(selection.index);
+                if (correction != null) {
+                  clearHighlighting();
+                  highlightCorrections(spellCheckCorrections);
+                  selectCorrection(correction);
+                } else {
+                  clearHighlighting();
+                  highlightCorrections(spellCheckCorrections);
+                  deselectCorrection();
+                }
               } else {
                 clearHighlighting();
                 highlightCorrections(spellCheckCorrections);
               }
-            } else {
-              clearHighlighting();
-              highlightCorrections(spellCheckCorrections);
             }
-          }
-        }}
-        modules={editorModules}
-      />
-    </div>
+          }}
+          modules={editorModules}
+        />
+      </div>
+    </>
   );
 };
 
