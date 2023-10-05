@@ -45,10 +45,7 @@ const Chat = ({ getEditorText, setFormattedValue }) => {
   };
 
   return (
-    <div className="bg-white shadow-xl p-8 rounded-lg w-2/5 flex flex-col mr-6 max-h-[37rem] overflow-y-auto">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold">Chat</h2>
-      </div>
+    <div>
       <div className="mb-6 flex-grow overflow-y-auto px-4"> {/* Added padding on the x-axis to the main container */}
         {chatMessages.map((chatMessage) => (
             <div key={chatMessage.id} className={`flex flex-col mb-3 ${isMyMessage(chatMessage.author) ? "items-end" : "items-start"}`}>
