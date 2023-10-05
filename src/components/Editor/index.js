@@ -75,7 +75,7 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
     const text = editorRef.current.editor.getText();
     const words = text.split(/[\n\s]/);
     return words.map((word) => {
-      var cleanWord = word.replace(/\W/g, "");
+      var cleanWord = word.replace(/[^a-zA-Z'-]/g, "");
       var wordStart = word.indexOf(cleanWord);
       var wordEnd = word.length;
       if (wordStart === -1) {
