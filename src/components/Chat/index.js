@@ -45,48 +45,50 @@ const Chat = ({ getEditorText, setFormattedValue }) => {
   };
 
   return (
-    <div>
-      <div className="max-h-[20rem] overflow-y-auto">
-        <div className="mb-6 flex-grow overflow-y-auto px-4"> {/* Added padding on the x-axis to the main container */}
-          {chatMessages.map((chatMessage) => (
-              <div key={chatMessage.id} className={`flex flex-col mb-3 ${isMyMessage(chatMessage.author) ? "items-end" : "items-start"}`}>
-                <div className={`text-xs mb-1 ${isMyMessage(chatMessage.author) ? "text-gray-600 mr-1" : "text-gray-600 ml-1"}`}>
-                  {!isMyMessage(chatMessage.author) && (
-                      <div className="text-xs mb-1 text-gray-600">
-                        {chatMessage.author}
-                      </div>
-                  )}
-                </div>
-                <div className={'max-w-[15rem]'}>
-                  <div
-                      className={`relative p-3 rounded-lg ${isMyMessage(chatMessage.author)
-                          ? "bg-blue-200 text-right mr-1"  // Right-aligned for user's messages
-                          : "bg-gray-200 ml-1"             // Left-aligned for other messages
-                      }`}
-                  >
+      <div className="flex flex-col h-full">
+        <div className="flex-grow overflow-y-auto max-h-[22rem]">
+          <div className="mb-6 overflow-y-auto px-4">
+            {chatMessages.map((chatMessage) => (
+                <div key={chatMessage.id} className={`flex flex-col mb-3 ${isMyMessage(chatMessage.author) ? "items-end" : "items-start"}`}>
+                  <div className={`text-xs mb-1 ${isMyMessage(chatMessage.author) ? "text-gray-600 mr-1" : "text-gray-600 ml-1"}`}>
+                    {!isMyMessage(chatMessage.author) && (
+                        <div className="text-xs mb-1 text-gray-600">
+                          {chatMessage.author}
+                        </div>
+                    )}
+                  </div>
+                  <div className={'max-w-[15rem]'}>
+                    <div
+                        className={`relative p-3 rounded-lg ${isMyMessage(chatMessage.author)
+                            ? "bg-blue-200 text-right mr-1"  // Right-aligned for user's messages
+                            : "bg-gray-200 ml-1"             // Left-aligned for other messages
+                        }`}
+                    >
                       <p>{chatMessage.text}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-          ))}
+            ))}
+          </div>
+        </div>
+
+        <div className="">
+          <textarea
+              onChange={(event) => setMessage(event.target.value)} onKeyDown={handleKeyDown}
+              placeholder="Enter message..."
+              value={message}
+              className="w-full p-2 border rounded-md resize-none mb-2"
+              rows="2"
+              maxLength={280}
+          ></textarea>
+          <button
+              onClick={sendMessage}
+              className="w-full bg-blue-500 text-white p-2 rounded"
+          >
+            Send
+          </button>
         </div>
       </div>
-      <div className="mt-auto mb-4">
-        <textarea
-          onChange={(event) => setMessage(event.target.value)} onKeyDown={handleKeyDown}
-          placeholder="Enter message..."
-          value={message}
-          className="w-full p-2 border rounded-md resize-none mb-2"
-          rows="3"
-        ></textarea>
-        <button
-          onClick={sendMessage}
-          className="w-full bg-blue-500 text-white p-2 rounded"
-        >
-          send
-        </button>
-      </div>
-    </div>
   );
 };
 
