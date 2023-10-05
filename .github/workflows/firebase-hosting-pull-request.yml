@@ -4,11 +4,18 @@
 name: Deploy to Firebase Hosting on PR
 'on': pull_request
 jobs:
-  build_and_preview:
+  build:
+    uses: ./.github/workflows/build.yml
+  preview:
     if: '${{ github.event.pull_request.head.repo.full_name == github.repository }}'
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v2
+        with:
+          name: build
+          path: build
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
