@@ -18,7 +18,7 @@ const WindowControl = ({ getEditorText, setFormattedValue }) => {
     (activeMenuItem === HISTORY_LABEL && <History />);
 
   return (
-    <div className="bg-white shadow-xl p-8 rounded-lg w-2/5 flex flex-col mr-6 max-h-[37rem] overflow-y-auto">
+    <div className="bg-white shadow-xl p-8 rounded-lg w-2/5 flex flex-col mr-6">
       <div className="flex justify-between items-center mb-4">
         <Menu
           activeMenuItem={activeMenuItem}
