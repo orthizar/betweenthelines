@@ -13,6 +13,12 @@ const Chat = ({ getEditorText, setFormattedValue }) => {
 
   const sendMessage = async () => {
     if (message.trim() !== "") {
+      setChatMessages([...chatMessages, {
+        id: chatMessages.length + 1,
+        author: "User",
+        text: message,
+      }]);
+      setMessage("");
       const gptResponse = await sendChatGptRequest(message, getEditorText());
       const gptResponseChat = gptResponse.split("---")[1];
       const gptResponseEditor = gptResponse.split("---")[0];
@@ -26,11 +32,17 @@ const Chat = ({ getEditorText, setFormattedValue }) => {
         text: gptResponseChat,
       }]);
       console.log(gptResponseEditor.replace(/(?:\r\n|\r|\n|\\n)/g, '<br>'));
-      setFormattedValue(gptResponseEditor.replace(/(?:\r\n|\r|\n|\\n)/g, '<br>'));
-      setMessage("");
+      const value = gptResponseEditor.replace(/(?:\r\n|\r|\n|\\n)/g, '<br>');
+      setFormattedValue(value);
     }
   };
 
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter' && !event.shiftKey) {  // Checking for Enter key press without Shift
+      event.preventDefault();  // Prevent default Enter key behavior (like submitting a form)
+      sendMessage();
+    }
+  };
 
   return (
     <div className="bg-white shadow-xl p-8 rounded-lg w-2/5 flex flex-col mr-6 max-h-[37rem] overflow-y-auto">
@@ -62,7 +74,7 @@ const Chat = ({ getEditorText, setFormattedValue }) => {
       </div>
       <div className="mt-auto">
         <textarea
-          onChange={(event) => setMessage(event.target.value)}
+          onChange={(event) => setMessage(event.target.value)} onKeyDown={handleKeyDown}
           placeholder="Enter message..."
           value={message}
           className="w-full p-2 border rounded-md resize-none mb-2"
