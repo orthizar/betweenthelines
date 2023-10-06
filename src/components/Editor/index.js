@@ -111,7 +111,7 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
   // Autocompletion highlighting
 
   const highlightAutocomplete = () => {
-    const selection = editorRef.current.editor.getSelection();
+    // const selection = editorRef.current.editor.getSelection();
     const text = editorRef.current.editor.getText();
     // prefix is the word before the cursor
     const splitText = text.split(/[\W]/);
