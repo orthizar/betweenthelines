@@ -8,22 +8,8 @@ const setCookie = (name, value, min = 10) => {
   document.cookie = name + "=" + (value || "") + expires + "; path=/";
 };
 
-const getCookie = (name) => {
-  const nameEQ = name + "=";
-  const ca = document.cookie.split(';');
-  for (let i = 0; i < ca.length; i++) {
-    let c = ca[i];
-    while (c.charAt(0) === ' ') c = c.substring(1, c.length);
-    if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
-  }
-  return null;
-};
-
-const cookieValue = getCookie('chatMessages');
-const initialChatMessages = cookieValue ? JSON.parse(cookieValue) : [{ id: 1, author: "Bot", text: "Hello, how may I help you?" }];
-
-const Chat = ({ getEditorText, setFormattedValue }) => {
-  const [chatMessages, setChatMessages] = useState(initialChatMessages);
+const Chat = ({ getEditorText, setFormattedValue, state }) => {
+  const [chatMessages, setChatMessages] = useState(state);
   const [message, setMessage] = useState("");
 
   const updateChatMessages = (newMessages) => {
