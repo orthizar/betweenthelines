@@ -1,6 +1,6 @@
 import "react-quill/dist/quill.snow.css";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import ReactQuill from "react-quill";
 
@@ -11,16 +11,12 @@ const aff = await fetch(`dictionaries/${lang}/${lang}.aff`).then((r) => r.text()
 const dic = await fetch(`dictionaries/${lang}/${lang}.dic`).then((r) => r.text());
 const spell = nspell({ aff: aff, dic: dic });
 
+var editorBindingsInitialized = false;
 
 const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
   const [spellCheckMistakes, setSpellCheckMistakes] = useState([]);
   const [currentMistake, setCurrentMistake] = useState(null);
   const [editorCorrections, setEditorCorrections] = useState([]);
-
-
-  const editorModules = {
-    toolbar: null,
-  };
 
   // Mistake checking
   const getMistakes = (text) => {
@@ -59,7 +55,7 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
     return corrections;
   }
 
-  // Highlighting
+  // Mistake highlighting
 
   const clearHighlighting = () => {
     editorRef.current.editor.removeFormat(
@@ -104,6 +100,38 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
     setCurrentMistake(null);
   };
 
+  // Autocompletion
+
+  const getAutocompleteSuggestion = (prefix) => {
+    const suggestions = spell.suggest(prefix);
+    console.log(prefix, suggestions)
+    return suggestions.length > 0 ? suggestions[0] : null;
+  };
+
+  // Autocompletion highlighting
+
+  const highlightAutocomplete = () => {
+    const selection = editorRef.current.editor.getSelection();
+    const text = editorRef.current.editor.getText();
+    // prefix is the word before the cursor
+    const splitText = text.split(/[\W]/);
+    const prefix = splitText[splitText.length - 2].replace(/[^a-zA-Z'-]/g, "");
+    const suggestion = getAutocompleteSuggestion(prefix);
+    if (suggestion) {
+      // editorRef.current.editor.insertText(
+      //   selection.index,
+      //   suggestion.substring(prefix.length),
+      //   "silent"
+      // );
+      // editorRef.current.editor.formatText(
+      //   selection.index,
+      //   suggestion.length - prefix.length,
+      //   { color: "yellow" },
+      //   "silent"
+      // );
+      // console.log(suggestion)
+    }
+  };
   // Event handlers
 
   const handleSelectionChange = (selection) => {
@@ -135,6 +163,7 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
       const mistakes = getMistakes(editor.getText());
       setSpellCheckMistakes(mistakes);
       highlightMistakes(mistakes);
+      highlightAutocomplete();
     }
   };
 
@@ -147,6 +176,32 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
       }
     }
   };
+
+  const handleEditorTab = (range, context) => {
+    console.log("tab", range, context);
+    return false;
+  };
+
+
+  // Editor configuration
+
+  const editorModules = {
+    toolbar: null,
+  };
+
+  useEffect(() => {
+    if (!editorBindingsInitialized) {
+      editorRef.current.editor.keyboard.bindings[9].unshift(
+        {
+          key: 9,
+          handler: handleEditorTab,
+        },
+      );
+      editorBindingsInitialized = true;
+      console.log(editorRef.current.editor.keyboard.bindings);
+
+    }
+  }, [editorRef]);
 
   return (
     <>
