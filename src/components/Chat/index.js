@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, {useState, useRef} from "react";
 import { sendChatGptRequest } from "../Helpers/request";
 
 const setCookie = (name, value, min = 10) => {
@@ -9,8 +9,17 @@ const setCookie = (name, value, min = 10) => {
 };
 
 const Chat = ({ getEditorText, setFormattedValue, state }) => {
+  const chatContainerRef = useRef(null);
   const [chatMessages, setChatMessages] = useState(state);
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState("")
+
+  const scrollToBottom = () => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  };
+
+  scrollToBottom();
 
   const updateChatMessages = (newMessages) => {
     setChatMessages(newMessages);
@@ -40,12 +49,15 @@ const Chat = ({ getEditorText, setFormattedValue, state }) => {
         author: "Bot",
         text: gptResponseChat,
       }]);
-      
+
+      scrollToBottom();
+
       console.log(gptResponseEditor.replace(/(?:\r\n|\r|\n|\\n)/g, '<br>'));
       const value = gptResponseEditor.replace(/(?:\r\n|\r|\n|\\n)/g, '<br>');
       setFormattedValue(value);
     }
   };
+
 
   const handleKeyDown = (event) => {
     if (event.key === 'Enter' && !event.shiftKey) {
@@ -56,7 +68,7 @@ const Chat = ({ getEditorText, setFormattedValue, state }) => {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex-grow overflow-y-auto max-h-[22rem]">
+      <div className="flex-grow overflow-y-auto max-h-[22rem]" ref={chatContainerRef} >
         <div className="mb-6 overflow-y-auto px-4">
           {chatMessages.map((chatMessage) => (
             <div key={chatMessage.id} className={`flex flex-col mb-3 ${isMyMessage(chatMessage.author) ? "items-end" : "items-start"}`}>
