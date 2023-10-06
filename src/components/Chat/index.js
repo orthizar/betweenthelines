@@ -52,8 +52,7 @@ const Chat = ({ getEditorText, setFormattedValue, state }) => {
 
       scrollToBottom();
 
-      console.log(gptResponseEditor.replace(/(?:\r\n|\r|\n|\\n)/g, '<br>'));
-      const value = gptResponseEditor.replace(/(?:\r\n|\r|\n|\\n)/g, '<br>');
+      const value = gptResponseEditor.replace(/(?:\r\n|\r|\n|\\n)/g, '\n').trim().replace(/\n/g, '<br>');
       setFormattedValue(value);
     }
   };
