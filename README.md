@@ -1,8 +1,14 @@
 # Between the lines
 
-This is a prototype for a text correction application with various features aimed at enhancing communication within email threads.
+This is a web application for a text correction application with various features aimed at enhancing communication within email threads.
 
 ## Features
+
+- **Chat function:** Chat interface that enables you to specify which sections of the email you'd like to improve or have written by the LLM.
+
+- **Misspelling Correction:** Automatically detects and highlights misspellings as you type and provides suggestions for correction.
+
+- **History:** Stores your prompts and major changes in History.
 
 - **Improve:** This feature is used to discuss ways to enhance the quality of communication or collaboration within the email thread.
 
@@ -19,6 +25,7 @@ This is a prototype for a text correction application with various features aime
 ## Technology
 
 - React JavaScript
+- Nspell
 - Tailwind Framework
 - Firebase
 - OpenAI
@@ -32,7 +39,7 @@ This is a prototype for a text correction application with various features aime
 
 ## Usage
 
-Visit the [web application](https://textcorrection-ceef8.web.app/) to see the prototype in action.
+Visit the [web application](https://betweenthelines-55a80.web.app/) to see the web application in action.
 
 ## Getting Started
 
@@ -42,7 +49,7 @@ To run this project locally, follow these steps:
 `git clone https://github.com/orthizar/betweenthelines.git`
 
 2. Navigate to the project directory:
-`cd text-correction-prototype`
+`cd betweenthelines`
 
 3. Install the project dependencies:
 `npm install`
