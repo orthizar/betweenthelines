@@ -16,8 +16,6 @@ const ChatGPT = () => {
   };
 
   const setFormattedValueWithHistory = (newFormattedValue, chatInput) => {
-    console.log("versions", versions);
-
     setVersions([
       ...versions,
       {
@@ -30,10 +28,10 @@ const ChatGPT = () => {
 
   const handleSubmit = (event, improvementType) => {
     event.preventDefault();
-    setFormattedValueWithHistory(
-      sendButtonRequest(editorRef, improvementType),
-      ""
-    );
+
+    sendButtonRequest(editorRef, improvementType).then((result) => {
+      setFormattedValueWithHistory(result, `Button: ${improvementType}`);
+    });
   };
 
   // window.sessionStorage.setItem("key", "value");
