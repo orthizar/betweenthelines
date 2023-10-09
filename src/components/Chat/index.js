@@ -1,11 +1,12 @@
-import React, {useState, useRef} from "react";
+import React, {useState, useRef, useEffect} from "react";
 import { sendChatGptRequest } from "../Helpers/request";
 
-const setCookie = (name, value, min = 10) => {
-  const date = new Date();
-  date.setTime(date.getTime() + (min * 60 * 1000));
-  const expires = "; expires=" + date.toUTCString();
-  document.cookie = name + "=" + (value || "") + expires + "; path=/";
+const setSessionData = (name, value) => {
+  try {
+    sessionStorage.setItem(name, value);
+  } catch (e) {
+    console.error("Failed to save session data:", e);
+  }
 };
 
 const Chat = ({ getEditorText, setFormattedValue, state }) => {
@@ -13,17 +14,19 @@ const Chat = ({ getEditorText, setFormattedValue, state }) => {
   const [chatMessages, setChatMessages] = useState(state);
   const [message, setMessage] = useState("")
 
+  useEffect(() => {
+    scrollToBottom();
+  })
+
   const scrollToBottom = () => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
   };
 
-  scrollToBottom();
-
   const updateChatMessages = (newMessages) => {
     setChatMessages(newMessages);
-    setCookie('chatMessages', JSON.stringify(newMessages));
+    setSessionData('chatMessages', JSON.stringify(newMessages));
   };
 
   const isMyMessage = (author) => author === "User";
@@ -50,13 +53,10 @@ const Chat = ({ getEditorText, setFormattedValue, state }) => {
         text: gptResponseChat,
       }]);
 
-      scrollToBottom();
-
       const value = gptResponseEditor.replace(/(?:\r\n|\r|\n|\\n)/g, '\n').trim().replace(/\n/g, '<br>');
       setFormattedValue(value);
     }
   };
-
 
   const handleKeyDown = (event) => {
     if (event.key === 'Enter' && !event.shiftKey) {
