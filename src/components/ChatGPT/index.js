@@ -8,19 +8,38 @@ import WindowControl from "../WIndowControl";
 
 const ChatGPT = () => {
   const [formattedValue, setFormattedValue] = useState();
+  const [versions, setVersions] = useState([]);
   const editorRef = React.useRef(null);
 
   const getEditorText = () => {
     return editorRef.current.editor.getText();
   };
 
+  const setFormattedValueWithHistory = (newFormattedValue, chatInput) => {
+    console.log("versions", versions);
+
+    setVersions([
+      ...versions,
+      {
+        chatInput: chatInput,
+        formattedValue: newFormattedValue,
+      },
+    ]);
+    setFormattedValue(newFormattedValue);
+  };
+
   const handleSubmit = (event, improvementType) => {
     event.preventDefault();
-    if (improvementType === "Correct") {
-      sendCorrectionRequest(editorRef);
-    } else {
-      sendButtonRequest(editorRef, improvementType);
-    }
+    setFormattedValueWithHistory(
+      sendButtonRequest(editorRef, improvementType),
+      ""
+    );
+  };
+
+  // window.sessionStorage.setItem("key", "value");
+
+  const insertActiveVersionEditor = (versionIndex) => {
+    setFormattedValue(versions[versionIndex].formattedValue);
   };
 
   return (
@@ -28,7 +47,9 @@ const ChatGPT = () => {
       <div className="flex w-3/4 max-w-6xl h-[37rem]">
         <WindowControl
           getEditorText={getEditorText}
-          setFormattedValue={setFormattedValue}
+          setFormattedValueWithHistory={setFormattedValueWithHistory}
+          versions={versions}
+          insertActiveVersionEditor={insertActiveVersionEditor}
         />
         <div className="bg-white shadow-xl p-8 w-2/5 rounded-lg flex-grow flex flex-col">
           <Editor

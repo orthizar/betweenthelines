@@ -22,11 +22,6 @@ const ButtonGroup = ({ handleSubmit }) => {
       label: "Persuasive",
       color: "bg-indigo-400 hover:bg-indigo-700",
     },
-    {
-      id: "correct-button",
-      label: "Correct",
-      color: "bg-red-600 hover:bg-red-700",
-    },
   ];
 
   return (

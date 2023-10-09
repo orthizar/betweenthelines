@@ -2,7 +2,7 @@ import React, { useState } from "react";
 
 import { sendChatGptRequest } from "../Helpers/request";
 
-const Chat = ({ getEditorText, setFormattedValue }) => {
+const Chat = ({ getEditorText, setFormattedValueWithHistory }) => {
   const [chatMessages, setChatMessages] = useState([
     { id: 1, author: "User", text: "Hello, how may I help you?" },
   ]);
@@ -19,8 +19,7 @@ const Chat = ({ getEditorText, setFormattedValue }) => {
         text: message,
       };
       const gptResponse = await sendChatGptRequest(message, getEditorText());
-      console.log(gptResponse);
-      setFormattedValue(gptResponse);
+      setFormattedValueWithHistory(gptResponse, message);
       setChatMessages([...chatMessages, newMessage]);
       setMessage("");
     }
