@@ -5,6 +5,15 @@ import Chat from "../Chat/index";
 import History from "../History/index";
 import Menu from "../Menu/index";
 
+const getSessionData = (name) => {
+  try {
+    return sessionStorage.getItem(name);
+  } catch (e) {
+    console.error("Failed to retrieve session data:", e);
+    return null;
+  }
+};
+
 const WindowControl = ({
   getEditorText,
   setFormattedValueWithHistory,
@@ -12,11 +21,18 @@ const WindowControl = ({
 }) => {
   const [activeMenuItem, setActiveMenuItem] = useState("chat");
 
+  const cookieValue = getSessionData("chatMessages");
+  const initialChatMessages = cookieValue
+    ? JSON.parse(cookieValue)
+    : [{ id: 1, author: "Bot", text: "Hello, how may I help you?" }];
+
   const activeComponent =
     (activeMenuItem === CHAT_LABEL && (
       <Chat
         getEditorText={getEditorText}
         setFormattedValueWithHistory={setFormattedValueWithHistory}
+        setFormattedValue={setFormattedValue}
+        state={initialChatMessages}
       />
     )) ||
     (activeMenuItem === HISTORY_LABEL && (
@@ -28,7 +44,7 @@ const WindowControl = ({
     ));
 
   return (
-    <div className="bg-white shadow-xl p-8 rounded-lg w-2/5 flex flex-col mr-6 max-h-[37rem] overflow-y-auto">
+    <div className="bg-white shadow-xl p-8 rounded-lg w-2/5 flex flex-col mr-6">
       <div className="flex justify-between items-center mb-4">
         <Menu
           activeMenuItem={activeMenuItem}

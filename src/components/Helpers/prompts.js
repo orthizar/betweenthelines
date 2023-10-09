@@ -28,6 +28,10 @@ export const correctionsPrompt = (text) => {
 export const improvementPrompt = (improvementType, text) => {
     return `Make this text ${improvementType} and correct all spelling mistakes : ${text}`;
 }
+
 export const chatPrompt = (chatText, text) => {
-    return `This is my current Context: ${text}, Please do this Command: ${chatText}, give me the Mail Body back. Return the Context if you do not understand the command.`;
+    return `
+    This is my current Context: """${text}""", Please do this Command: """${chatText}""",
+    
+    Output should contain just the body of the Mail body, followed by a "---"  and sone sentence saying what you did `;
 }
