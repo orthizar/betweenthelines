@@ -9,6 +9,7 @@ import WindowControl from "../WIndowControl";
 const ChatGPT = () => {
   const [formattedValue, setFormattedValue] = useState();
   const editorRef = React.useRef(null);
+  const [currentEditorState, setCurrentEditorState] = useState("");
 
   const getEditorText = () => {
     return editorRef.current.editor.getText();
@@ -24,15 +25,17 @@ const ChatGPT = () => {
   const setFormattedValueWithHistory = (newFormattedValue, chatInput) => {
     const versions = getVersions();
 
-    const newVersion = {
-      chatInput: chatInput,
-      formattedValue: newFormattedValue,
-    };
+    console.log("xxx", getEditorText().length);
 
-    versions.push(newVersion);
+    if (getEditorText().length > 1) {
+      const newVersion = {
+        chatInput: chatInput,
+        formattedValue: getEditorText(),
+      };
+      versions.push(newVersion);
 
-    window.sessionStorage.setItem("versions", JSON.stringify(versions));
-
+      window.sessionStorage.setItem("versions", JSON.stringify(versions));
+    }
     setFormattedValue(newFormattedValue);
   };
 
@@ -44,19 +47,13 @@ const ChatGPT = () => {
     });
   };
 
-  const insertActiveVersionEditor = (versionIndex) => {
-    const versions = getVersions();
-    setFormattedValue(versions[versionIndex].formattedValue);
-  };
-
   return (
     <div className="p-12 bg-gray-100 min-h-screen flex items-center justify-center">
       <div className="flex w-3/4 max-w-6xl h-[37rem]">
         <WindowControl
           getEditorText={getEditorText}
           setFormattedValueWithHistory={setFormattedValueWithHistory}
-          versions={getVersions()}
-          insertActiveVersionEditor={insertActiveVersionEditor}
+          setFormattedValue={setFormattedValue}
         />
         <div className="bg-white shadow-xl p-8 w-2/5 rounded-lg flex-grow flex flex-col">
           <Editor

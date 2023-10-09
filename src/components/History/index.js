@@ -2,7 +2,12 @@ import React, { useState } from "react";
 
 import classNames from "classnames";
 
-const History = ({ versions, insertActiveVersionEditor }) => {
+const History = ({
+  insertActiveVersionEditor,
+  getEditorText,
+  setFormattedValue,
+  setFormattedValueWithHistory,
+}) => {
   const [activeVersion, setActiveVersion] = useState();
 
   const commonStyles =
@@ -10,19 +15,50 @@ const History = ({ versions, insertActiveVersionEditor }) => {
   const activeStyles = "bg-gray-300";
   const inActiveStyles = "bg-gray-200";
 
+  const getVersions = () => {
+    const versionsString = window.sessionStorage.getItem("versions");
+    const versions = versionsString ? JSON.parse(versionsString) : [];
+
+    return versions;
+  };
+
+  const getLatestVersion = () => {
+    const versions = getVersions();
+    return versions[versions.length - 1].formattedValue;
+  };
+
+  const getVersion = (versionIndex) => {
+    const versions = getVersions();
+    return versions[versionIndex].formattedValue;
+  };
+
   const handleVersionPress = (versionIndex) => {
+    const pressedVersion = getVersion(versionIndex);
+    const latestVersion = getLatestVersion();
+    var isVersionChanged = latestVersion !== getEditorText();
+
+    if (activeVersion !== undefined) {
+      const previousVersion = getVersion(activeVersion);
+      isVersionChanged = previousVersion !== getEditorText();
+    }
+
+    if (isVersionChanged) {
+      setFormattedValueWithHistory(pressedVersion);
+    } else {
+      console.log("pressedVersion", pressedVersion);
+      setFormattedValue(pressedVersion && pressedVersion);
+    }
     setActiveVersion(versionIndex);
-    insertActiveVersionEditor(versionIndex);
   };
 
   return (
     <div className="overflow-y-scroll">
-      {!versions.length && (
+      {!getVersions().length && (
         <p className="mb-3 text-gray-500 dark:text-gray-400 m-full text-center">
           No history yet
         </p>
       )}
-      {versions.reverse().map((version, index) => {
+      {getVersions().map((version, index) => {
         const VersionId = `Version-${index + 1}`;
         return (
           <div

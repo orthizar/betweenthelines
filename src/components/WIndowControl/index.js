@@ -8,8 +8,7 @@ import Menu from "../Menu/index";
 const WindowControl = ({
   getEditorText,
   setFormattedValueWithHistory,
-  versions,
-  insertActiveVersionEditor,
+  setFormattedValue,
 }) => {
   const [activeMenuItem, setActiveMenuItem] = useState("chat");
 
@@ -22,8 +21,9 @@ const WindowControl = ({
     )) ||
     (activeMenuItem === HISTORY_LABEL && (
       <History
-        versions={versions}
-        insertActiveVersionEditor={insertActiveVersionEditor}
+        getEditorText={getEditorText}
+        setFormattedValueWithHistory={setFormattedValueWithHistory}
+        setFormattedValue={setFormattedValue}
       />
     ));
 
