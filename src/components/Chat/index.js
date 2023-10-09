@@ -1,4 +1,4 @@
-import React, {useState, useRef} from "react";
+import React, {useState, useRef, useEffect} from "react";
 import { sendChatGptRequest } from "../Helpers/request";
 
 const setCookie = (name, value, min = 10) => {
@@ -8,18 +8,22 @@ const setCookie = (name, value, min = 10) => {
   document.cookie = name + "=" + (value || "") + expires + "; path=/";
 };
 
+
+
 const Chat = ({ getEditorText, setFormattedValue, state }) => {
   const chatContainerRef = useRef(null);
   const [chatMessages, setChatMessages] = useState(state);
   const [message, setMessage] = useState("")
+
+  useEffect(() => {
+    scrollToBottom();
+  })
 
   const scrollToBottom = () => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
   };
-
-  scrollToBottom();
 
   const updateChatMessages = (newMessages) => {
     setChatMessages(newMessages);
@@ -50,13 +54,10 @@ const Chat = ({ getEditorText, setFormattedValue, state }) => {
         text: gptResponseChat,
       }]);
 
-      scrollToBottom();
-
       const value = gptResponseEditor.replace(/(?:\r\n|\r|\n|\\n)/g, '\n').trim().replace(/\n/g, '<br>');
       setFormattedValue(value);
     }
   };
-
 
   const handleKeyDown = (event) => {
     if (event.key === 'Enter' && !event.shiftKey) {
