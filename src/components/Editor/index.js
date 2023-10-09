@@ -1,6 +1,6 @@
 import "./quill.css";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 import ReactQuill from "react-quill";
 
@@ -11,16 +11,14 @@ const aff = await fetch(`dictionaries/${lang}/${lang}.aff`).then((r) => r.text()
 const dic = await fetch(`dictionaries/${lang}/${lang}.dic`).then((r) => r.text());
 const spell = nspell({ aff: aff, dic: dic });
 
+var editorBindingsInitialized = false;
+
 
 const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
   const [spellCheckMistakes, setSpellCheckMistakes] = useState([]);
   const [currentMistake, setCurrentMistake] = useState(null);
   const [editorCorrections, setEditorCorrections] = useState([]);
-
-
-  const editorModules = {
-    toolbar: null,
-  };
+  const [selectedCorrection, setSelectedCorrection] = useState(null);
 
   // Mistake checking
   const getMistakes = (text) => {
@@ -99,11 +97,13 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
     );
     if (JSON.stringify(mistake) !== JSON.stringify(currentMistake)) {
       setCurrentMistake(mistake);
+      setSelectedCorrection(null);
       setEditorCorrections(mistake.corrections || getCorrectionsForMistake(mistake));
     }
   };
 
   const deselectMistake = () => {
+    setSelectedCorrection(null);
     setEditorCorrections([]);
     setCurrentMistake(null);
   };
@@ -186,6 +186,42 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
     }
   };
 
+  // Editor configuration
+
+  const editorModules = {
+    toolbar: null,
+  };
+  
+  useEffect(() => {
+    const navigateCorrections = () => {
+      const newSelection = selectedCorrection === null ? 0 : (selectedCorrection + 1) % editorCorrections.length;
+      setSelectedCorrection(newSelection);
+      console.log(newSelection)
+    };
+
+    const handleEditorTab = (range, context) => {
+      console.log("tab", range, context);
+      if (context.format.background && context.format.background === "red") {
+        navigateCorrections();
+        return false;
+      }
+      console.log(context.format.background && context.format.background === "red");
+      return false;
+    };
+
+    if (!editorBindingsInitialized) {
+      editorRef.current.editor.keyboard.bindings[9].unshift(
+        {
+          key: 9,
+          handler: handleEditorTab,
+        },
+      );
+      editorBindingsInitialized = true;
+      console.log(editorRef.current.editor.keyboard.bindings);
+
+    }
+  }, [editorRef, setSelectedCorrection, selectedCorrection, editorCorrections]);
+
   return (
     <>
       <div className="mb-2 p-2 border rounded-md h-14">
@@ -195,7 +231,7 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
             onClick={(event) => handleCorrectionClick(event, correction)}
             onMouseEnter={() => previewCorrection(correction)}
             onMouseLeave={() => unpreviewCorrection(correction)}
-            className={`text-black rounded text-sm w-1/5`}
+            className={`text-black rounded text-sm w-1/5 ${selectedCorrection === correction ? "bg-gray-200" : "bg-white"}`}
           >
             {correction}
           </button>
