@@ -150,12 +150,12 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
 
   return (
     <>
-      <div className="p-2 border rounded-md h-10">
+      <div className="p-2 border rounded-md h-14">
         {editorCorrections.map((correction) => (
           <button
             key={correction}
             onClick={(event) => handleCorrectionClick(event, correction)}
-            className={`text-black py-1 px-2 rounded text-sm w-1/5`}
+            className={`text-black p-1 rounded text-sm w-1/5`}
           >
             {correction}
           </button>
