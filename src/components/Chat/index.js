@@ -18,6 +18,12 @@ const Chat = ({ getEditorText, setFormattedValue, state }) => {
     scrollToBottom();
   })
 
+  const extractYouTubeUrl = (chatMessage) =>{
+    const regex = /(https?:\/\/(?:www\.)?youtube\.com\/[^\s]+)/;
+    const match = chatMessage.match(regex);
+    return match ? match[0] : null;
+}
+
   const scrollToBottom = () => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
@@ -31,15 +37,44 @@ const Chat = ({ getEditorText, setFormattedValue, state }) => {
 
   const isMyMessage = (author) => author === "User";
 
+  // Parsing the SRT content to extract just the transcript.
+function parseSRT(srt) {
+  const lines = srt.split('\n');
+  const transcriptLines = lines.filter((line, index) => {
+      return isNaN(line) && line !== '' && (index === 0 || (lines[index - 1] !== '' && isNaN(lines[index - 1])));
+  });
+  return transcriptLines.join(' ');
+}
+
+
   const sendMessage = async () => {
     if (message.trim() !== "") {
+      const youtubeLink = extractYouTubeUrl(message);
+
+      if (youtubeLink) {
+        try {
+          // Fetch the SRT data from Downsub
+          const response = await fetch(`https://downsub.com/?url=${youtubeLink}`);
+          const text = await response.text();
+
+          // Parse the SRT data to get just the transcript.
+          const transcript = parseSRT(text);
+          setMessage(transcript); // Set the transcript as the message
+
+        } catch (error) {
+          console.error("Error fetching transcript:", error);
+        }
+      }
+      else{
+        setMessage("");
+      }
+
       updateChatMessages([...chatMessages, {
         id: chatMessages.length + 1,
         author: "User",
         text: message,
       }]);
 
-      setMessage("");
       const gptResponse = await sendChatGptRequest(message, getEditorText());
       const gptResponseChat = gptResponse.split("---")[1];
       const gptResponseEditor = gptResponse.split("---")[0];
@@ -57,6 +92,7 @@ const Chat = ({ getEditorText, setFormattedValue, state }) => {
       setFormattedValue(value);
     }
   };
+
 
   const handleKeyDown = (event) => {
     if (event.key === 'Enter' && !event.shiftKey) {
