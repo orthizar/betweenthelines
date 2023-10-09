@@ -1,14 +1,13 @@
 import React, {useState, useRef, useEffect} from "react";
 import { sendChatGptRequest } from "../Helpers/request";
 
-const setCookie = (name, value, min = 10) => {
-  const date = new Date();
-  date.setTime(date.getTime() + (min * 60 * 1000));
-  const expires = "; expires=" + date.toUTCString();
-  document.cookie = name + "=" + (value || "") + expires + "; path=/";
+const setSessionData = (name, value) => {
+  try {
+    sessionStorage.setItem(name, value);
+  } catch (e) {
+    console.error("Failed to save session data:", e);
+  }
 };
-
-
 
 const Chat = ({ getEditorText, setFormattedValue, state }) => {
   const chatContainerRef = useRef(null);
@@ -27,7 +26,7 @@ const Chat = ({ getEditorText, setFormattedValue, state }) => {
 
   const updateChatMessages = (newMessages) => {
     setChatMessages(newMessages);
-    setCookie('chatMessages', JSON.stringify(newMessages));
+    setSessionData('chatMessages', JSON.stringify(newMessages));
   };
 
   const isMyMessage = (author) => author === "User";
