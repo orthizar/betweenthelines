@@ -1,4 +1,4 @@
-import "react-quill/dist/quill.snow.css";
+import "./quill.css";
 
 import React, { useState } from "react";
 
@@ -25,6 +25,7 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
   // Mistake checking
   const getMistakes = (text) => {
     const words = text.split(/[\n\s]/);
+    var index = 0;
     return words.map((word) => {
       var cleanWord = word.replace(/[^a-zA-Z'-]/g, "");
       var wordStart = word.indexOf(cleanWord);
@@ -35,11 +36,14 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
       } else {
         wordEnd = wordStart + cleanWord.length;
       }
+      const start = text.indexOf(word, index);
+      const end = text.indexOf(word, index) + wordEnd;
+      index = end;
       return !spell.correct(cleanWord) && {
-        start: text.indexOf(word),
-        end: text.indexOf(word) + wordEnd,
+        start: start,
+        end: end,
         word: cleanWord,
-      }
+      };
     }).filter((word) => word);
   }
   const getMistakeFromIndex = (index) => {
@@ -135,6 +139,7 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
       const mistakes = getMistakes(editor.getText());
       setSpellCheckMistakes(mistakes);
       highlightMistakes(mistakes);
+      deselectMistake();
     }
   };
 
@@ -150,12 +155,12 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
 
   return (
     <>
-      <div className="p-2 border rounded-md h-14">
+      <div className="mb-2 p-2 border rounded-md h-14">
         {editorCorrections.map((correction) => (
           <button
             key={correction}
             onClick={(event) => handleCorrectionClick(event, correction)}
-            className={`text-black p-1 rounded text-sm w-1/5`}
+            className={`text-black rounded text-sm w-1/5`}
           >
             {correction}
           </button>
@@ -165,7 +170,7 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
         <ReactQuill
           ref={editorRef}
           theme="snow"
-          placeholder="Enter your text here"
+          placeholder="Enter your text here..."
           value={formattedValue}
           className="w-full h-full border rounded-md text-lg"
           formats={
