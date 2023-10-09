@@ -108,6 +108,38 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
     setCurrentMistake(null);
   };
 
+  const blinkCorrection = (mistake, correction) => {
+    editorRef.current.editor.formatText(mistake.start, correction.length, { color: "LightGreen" }, "silent");
+    setTimeout(() => {
+      editorRef.current.editor.removeFormat(mistake.start, correction.length, "silent");
+    }, 500);
+  }
+
+  const previewCorrection = (correction) => {
+    const currentSelection = editorRef.current.editor.getSelection();
+    const mistake = currentMistake;
+    const text = editorRef.current.editor.getText();
+    const newText = text.substring(0, mistake.start) + correction + text.substring(mistake.end);
+    editorRef.current.editor.setText(newText, "silent");
+    const mistakes = getMistakes(newText);
+    setSpellCheckMistakes(mistakes);
+    highlightMistakes(mistakes);
+    editorRef.current.editor.formatText(mistake.start, correction.length, { background: "LightGreen" }, "silent");
+    editorRef.current.editor.setSelection(currentSelection, 0, "silent");
+  }
+
+  const unpreviewCorrection = (correction) => {
+    const currentSelection = editorRef.current.editor.getSelection();
+    const mistake = currentMistake;
+    const text = editorRef.current.editor.getText();
+    const newText = text.substring(0, mistake.start) + mistake.word + text.substring(mistake.start + correction.length);
+    editorRef.current.editor.setText(newText, "silent");
+    const mistakes = getMistakes(newText);
+    setSpellCheckMistakes(mistakes);
+    highlightMistakes(mistakes);
+    editorRef.current.editor.setSelection(currentSelection, 0, "silent");
+    selectMistake(mistake);
+  }
   // Event handlers
 
   const handleSelectionChange = (selection) => {
@@ -124,13 +156,14 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
     event.preventDefault();
     const mistake = currentMistake;
     const text = editorRef.current.editor.getText();
-    const newText = text.substring(0, mistake.start) + correction + text.substring(mistake.end);
+    const newText = text.substring(0, mistake.start) + correction + text.substring(mistake.start + correction.length);
     editorRef.current.editor.setText(newText, "silent");
     editorRef.current.editor.setSelection(mistake.start + correction.length, 0, "silent");
     deselectMistake();
     const mistakes = getMistakes(newText);
     setSpellCheckMistakes(mistakes);
     highlightMistakes(mistakes);
+    blinkCorrection(mistake, correction);
   }
 
   const handleEditorChange = (value, delta, source, editor) => {
@@ -160,6 +193,8 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
           <button
             key={correction}
             onClick={(event) => handleCorrectionClick(event, correction)}
+            onMouseEnter={() => previewCorrection(correction)}
+            onMouseLeave={() => unpreviewCorrection(correction)}
             className={`text-black rounded text-sm w-1/5`}
           >
             {correction}
