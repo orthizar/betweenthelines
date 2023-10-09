@@ -1,4 +1,4 @@
-import "react-quill/dist/quill.snow.css";
+import "./quill.css";
 
 import React, { useState } from "react";
 
@@ -150,12 +150,12 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
 
   return (
     <>
-      <div className="p-2 border rounded-md h-14">
+      <div className="mb-2 p-2 border rounded-md h-14">
         {editorCorrections.map((correction) => (
           <button
             key={correction}
             onClick={(event) => handleCorrectionClick(event, correction)}
-            className={`text-black p-1 rounded text-sm w-1/5`}
+            className={`text-black rounded text-sm w-1/5`}
           >
             {correction}
           </button>
@@ -165,7 +165,7 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
         <ReactQuill
           ref={editorRef}
           theme="snow"
-          placeholder="Enter your text here"
+          placeholder="Enter your text here..."
           value={formattedValue}
           className="w-full h-full border rounded-md text-lg"
           formats={
