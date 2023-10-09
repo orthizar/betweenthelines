@@ -135,6 +135,7 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
       const mistakes = getMistakes(editor.getText());
       setSpellCheckMistakes(mistakes);
       highlightMistakes(mistakes);
+      deselectMistake();
     }
   };
 
