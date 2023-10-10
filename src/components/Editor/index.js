@@ -66,8 +66,6 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
   };
 
   const applyCorrection = (correction) => {
-    console.log("apply correction", correction)
-    console.log("current mistake", currentMistake)
     const mistake = currentMistake;
     const text = editorRef.current.editor.getText();
     const newText = text.substring(0, mistake.start) + correction + text.substring(mistake.end);
@@ -202,7 +200,6 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
   };
 
   const handleEditorTab = (range, context) => {
-    console.log("tab", range, context);
     if (editorCorrections.length > 0) {
       unpreviewCorrection();
       navigateCorrections();
@@ -212,9 +209,7 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
   };
 
   const handleEditorEnter = (range, context) => {
-    console.log("enter", range, context);
     if (context.format.background === "lightgreen" && editorCorrections.length > 0) {
-      console.log("apply correction")
       unpreviewCorrection();
       applyCorrection(editorCorrections[selectedCorrection]);
     }
