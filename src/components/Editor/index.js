@@ -11,16 +11,14 @@ const aff = await fetch(`dictionaries/${lang}/${lang}.aff`).then((r) => r.text()
 const dic = await fetch(`dictionaries/${lang}/${lang}.dic`).then((r) => r.text());
 const spell = nspell({ aff: aff, dic: dic });
 
+var defaultBindings = null;
 
 const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
   const [spellCheckMistakes, setSpellCheckMistakes] = useState([]);
   const [currentMistake, setCurrentMistake] = useState(null);
   const [editorCorrections, setEditorCorrections] = useState([]);
-
-
-  const editorModules = {
-    toolbar: null,
-  };
+  const [selectedCorrection, setSelectedCorrection] = useState(null);
+  const [currentPreviewCorrection, setCurrentPreviewCorrection] = useState(null);
 
   // Mistake checking
   const getMistakes = (text) => {
@@ -48,7 +46,7 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
   }
   const getMistakeFromIndex = (index) => {
     for (var i = 0; i < spellCheckMistakes.length; i++) {
-      if (index >= spellCheckMistakes[i].start && index <= spellCheckMistakes[i].end) {
+      if (index > spellCheckMistakes[i].start && index < spellCheckMistakes[i].end) {
         return spellCheckMistakes[i];
       }
     }
@@ -61,7 +59,24 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
     const corrections = spell.suggest(mistake.word).slice(0, 5);
     mistake.corrections = corrections;
     return corrections;
-  }
+  };
+
+  const navigateCorrections = () => {
+    setSelectedCorrection((prevSelectedCorrection) => prevSelectedCorrection == null ? 0 : (prevSelectedCorrection + 1) % editorCorrections.length);
+  };
+
+  const applyCorrection = (correction) => {
+    const mistake = currentMistake;
+    const text = editorRef.current.editor.getText();
+    const newText = text.substring(0, mistake.start) + correction + text.substring(mistake.end);
+    editorRef.current.editor.setText(newText, "silent");
+    editorRef.current.editor.setSelection(mistake.start + correction.length, 0, "silent");
+    deselectMistake();
+    const mistakes = getMistakes(newText);
+    setSpellCheckMistakes(mistakes);
+    highlightMistakes(mistakes);
+    blinkCorrection(mistake, correction);
+  };
 
   // Highlighting
 
@@ -99,11 +114,13 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
     );
     if (JSON.stringify(mistake) !== JSON.stringify(currentMistake)) {
       setCurrentMistake(mistake);
+      setSelectedCorrection(null);
       setEditorCorrections(mistake.corrections || getCorrectionsForMistake(mistake));
     }
   };
 
   const deselectMistake = () => {
+    setSelectedCorrection(null);
     setEditorCorrections([]);
     setCurrentMistake(null);
   };
@@ -116,7 +133,6 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
   }
 
   const previewCorrection = (correction) => {
-    const currentSelection = editorRef.current.editor.getSelection();
     const mistake = currentMistake;
     const text = editorRef.current.editor.getText();
     const newText = text.substring(0, mistake.start) + correction + text.substring(mistake.end);
@@ -125,20 +141,25 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
     setSpellCheckMistakes(mistakes);
     highlightMistakes(mistakes);
     editorRef.current.editor.formatText(mistake.start, correction.length, { background: "LightGreen" }, "silent");
-    editorRef.current.editor.setSelection(currentSelection, 0, "silent");
+    editorRef.current.editor.setSelection(mistake.start+1, 0, "silent");
+    setCurrentPreviewCorrection(correction);
   }
 
-  const unpreviewCorrection = (correction) => {
-    const currentSelection = editorRef.current.editor.getSelection();
-    const mistake = currentMistake;
-    const text = editorRef.current.editor.getText();
-    const newText = text.substring(0, mistake.start) + mistake.word + text.substring(mistake.start + correction.length);
-    editorRef.current.editor.setText(newText, "silent");
-    const mistakes = getMistakes(newText);
-    setSpellCheckMistakes(mistakes);
-    highlightMistakes(mistakes);
-    editorRef.current.editor.setSelection(currentSelection, 0, "silent");
-    selectMistake(mistake);
+  const unpreviewCorrection = () => {
+    if (currentPreviewCorrection != null) {
+      const correction = currentPreviewCorrection;
+      const currentSelection = editorRef.current.editor.getSelection();
+      const mistake = currentMistake;
+      const text = editorRef.current.editor.getText();
+      const newText = text.substring(0, mistake.start) + mistake.word + text.substring(mistake.start + correction.length);
+      editorRef.current.editor.setText(newText, "silent");
+      const mistakes = getMistakes(newText);
+      setSpellCheckMistakes(mistakes);
+      highlightMistakes(mistakes);
+      editorRef.current.editor.setSelection(currentSelection, 0, "silent");
+      selectMistake(mistake);
+      setCurrentPreviewCorrection(null);
+    }
   }
   // Event handlers
 
@@ -148,22 +169,14 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
     if (mistake != null) {
       selectMistake(mistake);
     } else {
+      unpreviewCorrection();
       deselectMistake();
     }
   };
 
   const handleCorrectionClick = (event, correction) => {
     event.preventDefault();
-    const mistake = currentMistake;
-    const text = editorRef.current.editor.getText();
-    const newText = text.substring(0, mistake.start) + correction + text.substring(mistake.start + correction.length);
-    editorRef.current.editor.setText(newText, "silent");
-    editorRef.current.editor.setSelection(mistake.start + correction.length, 0, "silent");
-    deselectMistake();
-    const mistakes = getMistakes(newText);
-    setSpellCheckMistakes(mistakes);
-    highlightMistakes(mistakes);
-    blinkCorrection(mistake, correction);
+    applyCorrection(correction);
   }
 
   const handleEditorChange = (value, delta, source, editor) => {
@@ -186,16 +199,59 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
     }
   };
 
+  const handleEditorTab = (range, context) => {
+    if (editorCorrections.length > 0) {
+      unpreviewCorrection();
+      navigateCorrections();
+      previewCorrection(editorCorrections[selectedCorrection == null ? 0 : (selectedCorrection + 1) % editorCorrections.length])
+    }
+    return false;
+  };
+
+  const handleEditorEnter = (range, context) => {
+    if (context.format.background === "lightgreen" && editorCorrections.length > 0) {
+      unpreviewCorrection();
+      applyCorrection(editorCorrections[selectedCorrection]);
+    }
+    return false;
+  };
+
+  // Editor configuration
+
+  const editorModules = {
+    toolbar: null,
+  };
+  if (editorRef.current != null) {
+    if (defaultBindings == null) {
+      defaultBindings = editorRef.current.editor.keyboard.bindings;
+    } else {
+      editorRef.current.editor.keyboard.bindings = defaultBindings;
+      editorRef.current.editor.keyboard.bindings[9].unshift(
+        {
+          key: 9,
+          format: ["background"],
+          handler: handleEditorTab,
+        },
+      );
+      editorRef.current.editor.keyboard.bindings[13].unshift(
+        {
+          key: 13,
+          format: ["background"],
+          handler: handleEditorEnter,
+        },
+      );
+    }
+  }
   return (
     <>
       <div className="mb-2 p-2 border rounded-md h-14">
-        {editorCorrections.map((correction) => (
+        {editorCorrections.map((correction, index) => (
           <button
             key={correction}
             onClick={(event) => handleCorrectionClick(event, correction)}
             onMouseEnter={() => previewCorrection(correction)}
             onMouseLeave={() => unpreviewCorrection(correction)}
-            className={`text-black rounded text-sm w-1/5`}
+            className={`text-black rounded text-sm w-1/5 ${selectedCorrection === index ? "bg-gray-200" : "bg-white"}`}
           >
             {correction}
           </button>
