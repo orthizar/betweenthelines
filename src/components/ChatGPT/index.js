@@ -20,7 +20,11 @@ const ChatGPT = () => {
     event.preventDefault();
 
     sendButtonRequest(editorRef, improvementType).then((result) => {
-      createVersion(`Button: ${improvementType}`, getCurrentTextInEditor());
+      createVersion(
+        `Button: ${improvementType}`,
+        getCurrentTextInEditor(),
+        result
+      );
       setFormattedValue(result);
     });
   };

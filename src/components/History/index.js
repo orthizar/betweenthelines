@@ -19,22 +19,23 @@ const History = ({ getCurrentTextInEditor, setFormattedValue }) => {
   const inActiveStyles = "bg-gray-200";
 
   const handleVersionPress = (versionId) => {
+    const currentTextInEditor = getCurrentTextInEditor();
+    const editorIsNotEmpty = currentTextInEditor.length < 1;
     const pressedVersionText = getTextFromVersion(versionId);
     const latestVersion = getTextFromLatestVersion(); // letztes item im array
-    var isVersionChanged = latestVersion !== getCurrentTextInEditor(); // wenn das letzte item im arrray nicht genau gleich ist wie im editor ist es true
+    var isVersionChanged = latestVersion !== currentTextInEditor; // wenn das letzte item im arrray nicht genau gleich ist wie im editor ist es true
+    const newVersionShouldBeCreated = isVersionChanged && editorIsNotEmpty;
 
     if (activeVersion !== undefined) {
       const currentVersion = getTextFromVersion(activeVersion); // die version auf welche man jetzt geclicktz hat
 
-      isVersionChanged = currentVersion !== getCurrentTextInEditor(); // Wenn die version auf welche man jetzt geklickt hat nicht gleich ist wie das, was im editor is dann ist es verändert
+      isVersionChanged = currentVersion !== currentTextInEditor; // Wenn die version auf welche man jetzt geklickt hat nicht gleich ist wie das, was im editor is dann ist es verändert
     }
 
-    if (isVersionChanged && getCurrentTextInEditor().length < 1) {
-      createVersion("Automatic save", getCurrentTextInEditor());
-      setFormattedValue(pressedVersionText);
-    } else {
-      setFormattedValue(pressedVersionText);
-    }
+    newVersionShouldBeCreated &&
+      createVersion("Automatic save", currentTextInEditor);
+
+    setFormattedValue(pressedVersionText);
     setActiveVersion(versionId);
   };
 

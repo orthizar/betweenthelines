@@ -21,18 +21,29 @@ export const getDescriptionFromVersion = (versionId) => {
 
 export const getTextFromLatestVersion = () => {
   const versions = getVersions();
-  return versions[versions.length - 1][0].text;
+  return versions[versions.length - 1].text;
 };
 
-export const createVersion = (description, textInEditor) => {
+export const createVersion = (description, textInEditor, generatedText) => {
   const versions = getVersions();
+  const isVersion0 = versions.length < 1;
 
   if (textInEditor.length > 1) {
+    if (isVersion0) {
+      const baseVersion = {
+        id: versions.length + 1,
+        description: "Base",
+        text: textInEditor,
+      };
+      versions.push(baseVersion);
+    }
+
     const newVersion = {
       id: versions.length + 1,
       description: description,
-      text: textInEditor,
+      text: generatedText,
     };
+
     versions.push(newVersion);
 
     window.sessionStorage.setItem("versions", JSON.stringify(versions));
