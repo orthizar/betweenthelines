@@ -1,5 +1,5 @@
 import React, {useState, useRef, useEffect} from "react";
-import { sendChatGptRequest } from "../Helpers/request";
+import {sendChatGptRequest, creatingQuestions, checkingQuestions} from "../Helpers/request";
 
 const setSessionData = (name, value) => {
   try {
@@ -40,21 +40,34 @@ const Chat = ({ getEditorText, setFormattedValue, state }) => {
       }]);
 
       setMessage("");
-      const gptResponse = await sendChatGptRequest(message, getEditorText());
-      const gptResponseChat = gptResponse.split("---")[1];
-      const gptResponseEditor = gptResponse.split("---")[0];
-      updateChatMessages([...chatMessages, {
-        id: chatMessages.length + 1,
-        author: "User",
-        text: message,
-      }, {
-        id: chatMessages.length + 2,
-        author: "Bot",
-        text: gptResponseChat,
-      }]);
 
-      const value = gptResponseEditor.replace(/(?:\r\n|\r|\n|\\n)/g, '\n').trim().replace(/\n/g, '<br>');
-      setFormattedValue(value);
+      for (let i = 0; i < 3 ; i++){
+
+        const questions = await creatingQuestions(getEditorText());
+        
+        const gptResponse = await sendChatGptRequest(message, getEditorText());
+        const gptResponseChat = gptResponse.split("---")[1];
+        const gptResponseEditor = gptResponse.split("---")[0];
+
+        const confirmedQuestions = await checkingQuestions(gptResponseEditor, questions);
+
+        if (confirmedQuestions === "True"){
+
+          updateChatMessages([...chatMessages, {
+            id: chatMessages.length + 1,
+            author: "User",
+            text: message,
+          }, {
+            id: chatMessages.length + 2,
+            author: "Bot",
+            text: gptResponseChat,
+          }]);
+    
+          const value = gptResponseEditor.replace(/(?:\r\n|\r|\n|\\n)/g, '\n').trim().replace(/\n/g, '<br>');
+          setFormattedValue(value);
+          break;
+        }
+      }
     }
   };
 

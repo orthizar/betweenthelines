@@ -35,3 +35,18 @@ export const chatPrompt = (chatText, text) => {
     
     Output should contain just the body of the Mail body, followed by a "---"  and sone sentence saying what you did `;
 }
+
+export const creatingQuestionsPromt = (text) => {
+    return `
+    Write 10 Questions about this text that could be answerd with a yess: """${text}"""`;
+}
+
+export const checkingQuestionsPromt = (text, questions) => {
+    return `
+    I have this ten questions: 
+    """${questions}"""
+    this is my Text:
+    """${text}"""
+
+    check if all the questions can be answerd with yess if so give me back just true if not just false`;
+}
