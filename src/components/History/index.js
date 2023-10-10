@@ -1,13 +1,16 @@
 import React, { useState } from "react";
+import {
+  createVersion,
+  getDescriptionFromVersion,
+  getTextFromLatestVersion,
+  getTextFromVersion,
+  getVersion,
+  getVersions,
+} from "../Helpers/versions";
 
 import classNames from "classnames";
 
-const History = ({
-  insertActiveVersionEditor,
-  getEditorText,
-  setFormattedValue,
-  setFormattedValueWithHistory,
-}) => {
+const History = ({ getCurrentTextInEditor, setFormattedValue }) => {
   const [activeVersion, setActiveVersion] = useState();
 
   const commonStyles =
@@ -15,40 +18,24 @@ const History = ({
   const activeStyles = "bg-gray-300";
   const inActiveStyles = "bg-gray-200";
 
-  const getVersions = () => {
-    const versionsString = window.sessionStorage.getItem("versions");
-    const versions = versionsString ? JSON.parse(versionsString) : [];
-
-    return versions;
-  };
-
-  const getLatestVersion = () => {
-    const versions = getVersions();
-    return versions[versions.length - 1].formattedValue;
-  };
-
-  const getVersion = (versionIndex) => {
-    const versions = getVersions();
-    return versions[versionIndex].formattedValue;
-  };
-
-  const handleVersionPress = (versionIndex) => {
-    const pressedVersion = getVersion(versionIndex);
-    const latestVersion = getLatestVersion();
-    var isVersionChanged = latestVersion !== getEditorText();
+  const handleVersionPress = (versionId) => {
+    const pressedVersionText = getTextFromVersion(versionId);
+    const latestVersion = getTextFromLatestVersion(); // letztes item im array
+    var isVersionChanged = latestVersion !== getCurrentTextInEditor(); // wenn das letzte item im arrray nicht genau gleich ist wie im editor ist es true
 
     if (activeVersion !== undefined) {
-      const previousVersion = getVersion(activeVersion);
-      isVersionChanged = previousVersion !== getEditorText();
+      const currentVersion = getTextFromVersion(activeVersion); // die version auf welche man jetzt geclicktz hat
+
+      isVersionChanged = currentVersion !== getCurrentTextInEditor(); // Wenn die version auf welche man jetzt geklickt hat nicht gleich ist wie das, was im editor is dann ist es verändert
     }
 
-    if (isVersionChanged) {
-      setFormattedValueWithHistory(pressedVersion);
+    if (isVersionChanged && getCurrentTextInEditor().length < 1) {
+      createVersion("Automatic save", getCurrentTextInEditor());
+      setFormattedValue(pressedVersionText);
     } else {
-      console.log("pressedVersion", pressedVersion);
-      setFormattedValue(pressedVersion && pressedVersion);
+      setFormattedValue(pressedVersionText);
     }
-    setActiveVersion(versionIndex);
+    setActiveVersion(versionId);
   };
 
   return (
@@ -58,20 +45,21 @@ const History = ({
           No history yet
         </p>
       )}
-      {getVersions().map((version, index) => {
-        const VersionId = `Version-${index + 1}`;
+      {getVersions().map((version) => {
         return (
           <div
             className={classNames(
               commonStyles,
-              activeVersion === index ? activeStyles : inActiveStyles
+              activeVersion === version.id ? activeStyles : inActiveStyles
             )}
-            key={VersionId}
-            onClick={() => handleVersionPress(index)}
+            key={version.id}
+            onClick={() => handleVersionPress(version.id)}
           >
-            <p className="mb-3 text-gray-500 dark:text-gray-600">{VersionId}</p>
+            <p className="mb-3 text-gray-500 dark:text-gray-600">
+              {version.id}
+            </p>
             <p className="mb-3 text-gray-500 dark:text-gray-400 truncate overflow-hidden text-ellipsis">
-              {version.chatInput}
+              {version.description}
             </p>
           </div>
         );

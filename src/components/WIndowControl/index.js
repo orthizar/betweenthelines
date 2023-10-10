@@ -15,7 +15,7 @@ const getSessionData = (name) => {
 };
 
 const WindowControl = ({
-  getEditorText,
+  getCurrentTextInEditor,
   setFormattedValueWithHistory,
   setFormattedValue,
 }) => {
@@ -29,7 +29,7 @@ const WindowControl = ({
   const activeComponent =
     (activeMenuItem === CHAT_LABEL && (
       <Chat
-        getEditorText={getEditorText}
+        getCurrentTextInEditor={getCurrentTextInEditor}
         setFormattedValueWithHistory={setFormattedValueWithHistory}
         setFormattedValue={setFormattedValue}
         state={initialChatMessages}
@@ -37,7 +37,7 @@ const WindowControl = ({
     )) ||
     (activeMenuItem === HISTORY_LABEL && (
       <History
-        getEditorText={getEditorText}
+        getCurrentTextInEditor={getCurrentTextInEditor}
         setFormattedValueWithHistory={setFormattedValueWithHistory}
         setFormattedValue={setFormattedValue}
       />
