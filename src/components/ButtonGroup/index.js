@@ -5,22 +5,22 @@ const ButtonGroup = ({ handleSubmit }) => {
     {
       id: "improve-button",
       label: "Improve",
-      color: "bg-blue-400 hover:bg-blue-700",
+      color: "#4285F4",
     },
     {
       id: "professional-button",
       label: "Professional",
-      color: "bg-green-400 hover:bg-green-700",
+      color: "#DB4437",
     },
     {
       id: "colloquially-button",
       label: "Colloquially",
-      color: "bg-orange-400 hover:bg-orange-700",
+      color: "#F4B400",
     },
     {
       id: "persuasive-button",
       label: "Persuasive",
-      color: "bg-indigo-400 hover:bg-indigo-700",
+      color: "#0F9D58",
     },
   ];
 
@@ -30,6 +30,7 @@ const ButtonGroup = ({ handleSubmit }) => {
         <button
           key={button.id}
           onClick={(event) => handleSubmit(event, button.label)}
+          style={{ backgroundColor: button.color }}
           className={`text-white py-1 px-2 rounded text-lg ${button.color}`}
         >
           {button.label}
