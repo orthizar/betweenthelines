@@ -72,7 +72,7 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
     const text = editorRef.current.editor.getText();
     const newText = text.substring(0, mistake.start) + correction + text.substring(mistake.end);
     editorRef.current.editor.setText(newText, "silent");
-    editorRef.current.editor.setSelection(mistake.end, 0, "silent");
+    editorRef.current.editor.setSelection(mistake.start + correction.length, 0, "silent");
     deselectMistake();
     const mistakes = getMistakes(newText);
     setSpellCheckMistakes(mistakes);
