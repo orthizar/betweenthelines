@@ -1,5 +1,5 @@
 import React, {useState, useRef, useEffect} from "react";
-import { sendChatGptRequest } from "../Helpers/request";
+import {invokePipeline} from "../Helpers/refine";
 
 const setSessionData = (name, value) => {
   try {
@@ -40,21 +40,21 @@ const Chat = ({ getEditorText, setFormattedValue, state }) => {
       }]);
 
       setMessage("");
-      const gptResponse = await sendChatGptRequest(message, getEditorText());
-      const gptResponseChat = gptResponse.split("---")[1];
-      const gptResponseEditor = gptResponse.split("---")[0];
-      updateChatMessages([...chatMessages, {
-        id: chatMessages.length + 1,
-        author: "User",
-        text: message,
-      }, {
-        id: chatMessages.length + 2,
-        author: "Bot",
-        text: gptResponseChat,
-      }]);
+      const transformed = await invokePipeline(getEditorText(), message);
+      // const chatResponse = transformed.observation;
+      // const transformedText = transformed.output;
+      // updateChatMessages([...chatMessages, {
+      //   id: chatMessages.length + 1,
+      //   author: "User",
+      //   text: message,
+      // }, {
+      //   id: chatMessages.length + 2,
+      //   author: "Bot",
+      //   text: chatResponse,
+      // }]);
 
-      const value = gptResponseEditor.replace(/(?:\r\n|\r|\n|\\n)/g, '\n').trim().replace(/\n/g, '<br>');
-      setFormattedValue(value);
+      // const value = transformedText.replace(/(?:\r\n|\r|\n|\\n)/g, '\n').trim().replace(/\n/g, '<br>');
+      // setFormattedValue(value);
     }
   };
 
