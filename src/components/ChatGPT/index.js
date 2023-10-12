@@ -1,5 +1,4 @@
-import React, { useCallback, useLayoutEffect, useState } from "react";
-import { sendButtonRequest, sendCorrectionRequest } from "../Helpers/request";
+import React, { useLayoutEffect, useState } from "react";
 
 import ButtonGroup from "../ButtonGroup";
 import Editor from "../Editor";
@@ -24,7 +23,7 @@ const ChatGPT = () => {
   const [activeVersion, setActiveVersion] = useState();
   const [activeTab, setActiveTab] = useState("editor");
   const editorRef = React.useRef(null);
-  const [w, h] = useWindowSize();
+  const [w] = useWindowSize();
 
   const getPlainText = () => {
     if (editorRef.current) {
@@ -32,29 +31,27 @@ const ChatGPT = () => {
     }
   };
 
+  const MobileSwitchButton = ({ text }) => {
+    const textId = text.toLowerCase();
+
+    return (
+      <button
+        className={`px-4 py-2 ${
+          activeTab === textId ? "bg-blue-500 text-white" : "bg-gray-300"
+        }`}
+        onClick={() => setActiveTab(textId)}
+      >
+        {text}
+      </button>
+    );
+  };
+
   return (
     <div className="bg-gray-100 min-h-screen flex flex-col sm:flex-row items-center justify-center">
-      {/* Tab navigation (only on mobile) */}
       <div className="fixed top-4 left-5/9 flex mb-4 sm:hidden">
-        <button
-          className={`px-4 py-2 ${
-            activeTab === "chat" ? "bg-blue-500 text-white" : "bg-gray-300"
-          }`}
-          onClick={() => setActiveTab("chat")}
-        >
-          Chat
-        </button>
-        <button
-          className={`px-4 py-2 ${
-            activeTab === "editor" ? "bg-blue-500 text-white" : "bg-gray-300"
-          }`}
-          onClick={() => setActiveTab("editor")}
-        >
-          Editor
-        </button>
+        <MobileSwitchButton text="Chat" />
+        <MobileSwitchButton text="Editor" />
       </div>
-
-      {/* Components for larger screens */}
       <div className="sm:flex w-3/4 max-w-6xl h-[37rem]">
         {activeTab === "chat" || w > 640 ? (
           <WindowControl
