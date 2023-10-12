@@ -18,7 +18,6 @@ export async function* invokePipeline(text, transformationCommand, refine) {
             try {
                 const format = "email";
                 if (step === 0) {
-                    console.debug("transformed")
                     transformed = await transformText(text, transformationCommand, format);
                     yield await Promise.resolve(transformed.observation);
                     step++;
@@ -27,31 +26,26 @@ export async function* invokePipeline(text, transformationCommand, refine) {
                     step = 15;
                 }
                 if (step === 1) {
-                    console.debug("questions")
                     yield await Promise.resolve("Generating questions for self-checking.");
                     questions = await generateQuestions(text);
                     step++;
                 }
                 if (step === 2) {
-                    console.debug("sourceAnswers")
                     yield await Promise.resolve("Checking question answerability.");
                     sourceAnswers = await answerQuestions(text, questions);
                     step++;
                 }
                 if (step === 3) {
-                    console.debug("verifiedSourceAnswers")
                     const verifiedSourceAnswers = await validateAnswers(text, questions, sourceAnswers);
                     goodQuestions = verifiedSourceAnswers.filter((answer) => answer.valid).map((answer) => answer.question);
                     step++;
                 }
                 if (step === 4) {
-                    console.debug("transformedAnswers")
                     yield await Promise.resolve("Answering questions for self-checking.");
                     transformedAnswers = await answerQuestions(transformed.output, goodQuestions);
                     step++;
                 }
                 if (step === 5) {
-                    console.debug("verifiedTransformedAnswers")
                     yield await Promise.resolve("Verifying questions for self-checking.");
                     const verifiedTransformedAnswers = await validateAnswers(transformed.output, goodQuestions, transformedAnswers);
                     var hasFailedAnswers = verifiedTransformedAnswers.some((answer) => !answer.valid);
@@ -62,20 +56,17 @@ export async function* invokePipeline(text, transformationCommand, refine) {
                 if (step > 5 && step <= 14) {
                     while (hasFailedAnswers && step <= 14) {
                         if ((step - 6) % 2 === 0) {
-                            console.debug("enriched")
                             yield await Promise.resolve("Enriching text with missing information.");
                             transformed = await enrichText(text, transformed, goodQuestions, transformationCommand, format);
                             yield await Promise.resolve(transformed.observation);
                             step++;
                         }
                         if ((step - 6) % 2 === 1) {
-                            console.debug("enrichedAnswers")
                             yield await Promise.resolve("Answering questions for self-checking.");
                             enrichedAnswers = await answerQuestions(transformed.output, goodQuestions);
                             step++;
                         }
                         if ((step - 6) % 2 === 2) {
-                            console.debug("verifiedenrichedAnswers")
                             yield await Promise.resolve("Verifying questions for self-checking.");
                             const verifiedenrichedAnswers = await validateAnswers(transformed.output, goodQuestions, enrichedAnswers);
                             hasFailedAnswers = verifiedenrichedAnswers.some((answer) => !answer.valid);

@@ -55,7 +55,7 @@ const ChatGPT = () => {
       </div>
 
       {/* Components for larger screens */}
-      <div className="sm:flex w-3/4 max-w-6xl h-[37rem]">
+      <div className="sm:flex w-[83%] h-[40rem] justify-between">
         {activeTab === "chat" || w > 640 ? (
           <WindowControl
             setActiveVersion={setActiveVersion}
@@ -66,7 +66,7 @@ const ChatGPT = () => {
           />
         ) : null}
         <div
-          className={`bg-white shadow-xl p-8 rounded-lg flex-grow flex flex-col  ${
+          className={`bg-white shadow-xl p-8 sm:w-[65%] rounded-lg flex flex-col  ${
             activeTab === "chat" && !(w > 640) ? "hidden" : ""
           }`}
         >

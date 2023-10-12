@@ -53,7 +53,7 @@ const WindowControl = ({
     ));
 
   return (
-    <div className="bg-white shadow-xl p-8 rounded-lg w-full sm:w-2/5 flex flex-col sm:mr-6">
+    <div className="bg-white shadow-xl p-8 rounded-lg w-full sm:w-[32%] flex flex-none flex-col">
       <div className="flex justify-between items-center mb-4">
         <Menu
           activeMenuItem={activeMenuItem}

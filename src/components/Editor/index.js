@@ -308,7 +308,7 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
           </button>
         ))}
       </div>
-      <div className="mb-6 h-full overflow-y-auto">
+      <div className="mb-6 h-full w-full overflow-auto">
         <ReactQuill
           ref={editorRef}
           theme="snow"
