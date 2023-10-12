@@ -27,66 +27,80 @@
 
 import { invokeLLM } from "./request";
 
-export const invokePipeline = async (text, transformationCommand) => {
-    console.debug("tranfomed")
-    const transformed = await transformText(text, transformationCommand);
-    console.debug("questions")
-    const questions = await generateQuestions(text);
-    console.debug("sourceAnswers")
-    const sourceAnswers = await answerQuestions(text, questions);
-    console.debug("verifiedSourceAnswers")
-    const verifiedSourceAnswers = await validateAnswers(text, questions, sourceAnswers);
-    // remove questions that cannot be answered correctly from the source text
-    const goodQuestions = verifiedSourceAnswers.filter((answer) => answer.valid).map((answer) => answer.question);
-    console.debug("transformedAnswers")
-    const transformedAnswers = await answerQuestions(transformed.output, goodQuestions);
-    console.debug("verifiedTransformedAnswers")
-    const verifiedTransformedAnswers = await validateAnswers(transformed.output, goodQuestions, transformedAnswers);
-    var hasFailedAnswers = verifiedTransformedAnswers.some((answer) => !answer.valid);
-    var enriched = transformed;
-    while (hasFailedAnswers) {
-        console.debug("enriched")
-        enriched = await enrichText(text, goodQuestions, transformationCommand);
-        console.debug("emphasizedAnswers")
-        const emphasizedAnswers = await answerQuestions(enriched.output, goodQuestions);
-        console.debug("verifiedEmphasizedAnswers")
-        const verifiedEmphasizedAnswers = await validateAnswers(enriched.output, goodQuestions, emphasizedAnswers);
-        hasFailedAnswers = verifiedEmphasizedAnswers.some((answer) => !answer.valid);
+const maxRetries = 3;
+
+export async function* invokePipeline(text, transformationCommand) {
+    try {
+        const format = "email";
+        console.debug("tranfomed")
+        const transformed = await transformText(text, transformationCommand, format);
+        yield await Promise.resolve(transformed.thought);
+        console.debug("questions")
+        yield await Promise.resolve("Generating questions for self-checking.");
+        const questions = await generateQuestions(text);
+        console.debug("sourceAnswers")
+        yield await Promise.resolve("Checking question answerability.");
+        const sourceAnswers = await answerQuestions(text, questions);
+        console.debug("verifiedSourceAnswers")
+        const verifiedSourceAnswers = await validateAnswers(text, questions, sourceAnswers);
+        // remove questions that cannot be answered correctly from the source text
+        const goodQuestions = verifiedSourceAnswers.filter((answer) => answer.valid).map((answer) => answer.question);
+        console.debug("transformedAnswers")
+        yield await Promise.resolve("Checking transformed text information integrity.");
+        const transformedAnswers = await answerQuestions(transformed.output, goodQuestions);
+        console.debug("verifiedTransformedAnswers")
+        const verifiedTransformedAnswers = await validateAnswers(transformed.output, goodQuestions, transformedAnswers);
+        var hasFailedAnswers = verifiedTransformedAnswers.some((answer) => !answer.valid);
+        var nValidAnswers = verifiedTransformedAnswers.filter((answer) => answer.valid).length;
+        yield await Promise.resolve("Text information score: " + nValidAnswers + "/" + goodQuestions.length);
+        var iteration = 0;
+        var enriched = transformed;
+        while (hasFailedAnswers && iteration < 3) {
+            console.debug("enriched")
+            enriched = await enrichText(text, enriched, goodQuestions, transformationCommand, format);
+            yield await Promise.resolve(enriched.thought);
+            console.debug("emphasizedAnswers")
+            yield await Promise.resolve("Checking transformed text information integrity.");
+            const emphasizedAnswers = await answerQuestions(enriched.output, goodQuestions);
+            console.debug("verifiedEmphasizedAnswers")
+            const verifiedEmphasizedAnswers = await validateAnswers(enriched.output, goodQuestions, emphasizedAnswers);
+            hasFailedAnswers = verifiedEmphasizedAnswers.some((answer) => !answer.valid);
+            nValidAnswers = verifiedEmphasizedAnswers.filter((answer) => answer.valid).length;
+            yield await Promise.resolve("Text information score: " + nValidAnswers + "/" + goodQuestions.length);
+        }
+        console.debug("fixed")
+        yield await Promise.resolve("Checking text format.");
+        const fixed = await fixFormat(enriched.output, format);
+        yield await Promise.resolve(fixed.thought);
+        console.log("fixed", fixed);
+        yield await Promise.resolve(fixed);
+    } catch (error) {
+        console.error(error);
+        yield await Promise.resolve("Something went wrong. Please try again.");
+        yield await Promise.resolve({
+            output: text,
+        });
     }
-    console.debug("fixed")
-    const fixed = await fixFormat(enriched.output);
-    console.log("fixed", fixed);
-    return fixed;
 };
 
-const transformText = async (text, transformationCommand) => {
-    const format = "email";
-    const prompt = `
-Execute the following transformation commands for me.
-Use the following format:
+const getMaxTokens = (prompt) => {
+    return 4096 - ~~(prompt.length / 3.5);
+};
 
-Text: the source text you want to transform
-Transformation: the transformations you should do to the source text
-Thought: you should always think about what to do.
-Output: the transformed text in format of the text form "${format}".
-Observation: Describe what you did in max 15 words.
-
-Begin! Remember to use the correct format.
-Text: ${text}
-Transformation: ${transformationCommand}`.trim();
-    const tokens = 4096 - ~~(prompt.length/3.5);
-    const transformedText = await invokeLLM(prompt, tokens);
+const transformText = async (text, transformationCommand, format) => {
+    const prompt = transformTextPrompt(text, transformationCommand, format);
+    const transformedText = await invokeLLM(prompt, getMaxTokens(prompt));
     console.log("transform", "prompt", prompt);
     console.log("transform", "transformedText", transformedText);
     const parsedOutput = transformedText.match(/(\n|.)*Thought:\n*(.*)Output:\n*(.*)Observation:\n*(.*)/s);
     // console.log("transform", "parsedOutput", parsedOutput);
     const transformed = {
-        thought: parsedOutput[1].trim(),
-        output: parsedOutput[2].trim(),
-        observation: parsedOutput[3].trim(),
+        thought: parsedOutput[2].trim(),
+        output: parsedOutput[3].trim(),
+        observation: parsedOutput[4].trim(),
     };
     console.log("transform", "transformed", transformed);
-    return transformed; 
+    return transformed;
 };
 
 const generateQuestions = async (text) => {
@@ -101,8 +115,7 @@ Question: the question you want to generate. The question should be about the co
 
 Begin! Remember to use the correct format.
 Text: ${text}`.trim();
-    const tokens = 4096 - ~~(prompt.length/3.5);
-    const generatedQuestions = await invokeLLM(prompt, tokens);
+    const generatedQuestions = await invokeLLM(prompt, getMaxTokens(prompt));
     console.log("generateQuestions", "prompt", prompt);
     console.log("generateQuestions", "generatedQuestions", generatedQuestions);
     const parsedOutput = generatedQuestions.matchAll(/[\n.]*Question:(.*)/mg).toArray();
@@ -113,7 +126,7 @@ Text: ${text}`.trim();
 };
 
 const answerQuestions = async (text, questions) => {
-    const formattedQuestions = "["+questions.join(",")+"]";
+    const formattedQuestions = "[" + questions.join(",") + "]";
     const prompt = `
 Answer the following questions.
 Use the following format:
@@ -128,8 +141,8 @@ Answer: the answer you want to give
 Begin! Remember to use the correct format.
 Text: ${text}
 Questions: ${formattedQuestions}`.trim();
-    const tokens = 4096 - ~~(prompt.length/3.5);
-    const answeredQuestions = await invokeLLM(prompt, tokens);
+
+    const answeredQuestions = await invokeLLM(prompt, getMaxTokens(prompt));
     console.log("answerQuestions", "prompt", prompt);
     console.log("answerQuestions", "answeredQuestions", answeredQuestions);
     const parsedOutput = answeredQuestions.matchAll(/[\n.]*Question:(.*)[\n.]*Answer:(.*)/mg).toArray();
@@ -159,6 +172,7 @@ const validateAnswers = async (text, questions, answers) => {
     formattedAnswers += "]";
     const prompt = `
 Verify the following answers.
+Do not stop until all answers are verified.
 Use the following format:
 
 Text: the source text you want to verify the answers for
@@ -168,15 +182,15 @@ Answers: the answers you want to verify, wrapped in square brackets
 Question: the question you want to verify the answer for
 Answer: the answer you want to verify
 Valid: yes or no
-... (this Question/Answer/Valid is repeated for all questions)
+... (this Question/Answer/Valid block is repeated for all questions)
 
 Begin! Remember to use the correct format.
 Text: ${text}
 Questions: ${formattedQuestions}
 Answers: ${formattedAnswers}`.trim();
-    const tokens = 4096 - ~~(prompt.length/3.5);
+
     console.log("validateAnswers", "tokens", tokens);
-    const validatedAnswers = await invokeLLM(prompt, tokens);
+    const validatedAnswers = await invokeLLM(prompt, getMaxTokens(prompt));
     console.log("validateAnswers", "prompt", prompt);
     console.log("validateAnswers", "validateAnswers", validatedAnswers);
     const parsedOutput = validatedAnswers.matchAll(/[\n.]*Question:(.*)[\n.]*Answer:(.*)[\n.]*Valid:(.*)/mg).toArray();
@@ -189,12 +203,15 @@ Answers: ${formattedAnswers}`.trim();
         };
     });
     console.log("validateAnswers", "results", results);
+    if (results.length !== questions.length) {
+        throw new Error("Number of questions and answers do not match.");
+    }
     return results;
 };
 
 // the following function should be used to include the failed questions in the transformed text
-const enrichText = async (text, questions, transformationCommand) => {
-    const formattedQuestions = "["+questions.join(",")+"]";
+const enrichText = async (text, transformedText, questions, transformationCommand, format) => {
+    const formattedQuestions = "[" + questions.join(",") + "]";
     const prompt = `
 The text was transformed but is missing some information.
 Include the information in the retransformed text but make sure to be in line with the transformation command.
@@ -211,20 +228,47 @@ Begin! Remember to use the correct format.
 
 Text: ${text}
 Transformation: ${transformationCommand}
-Transformed Text: ${text}
+Transformed Text: ${transformedText}
 Information: ${formattedQuestions}`.trim();
-    const tokens = 4096 - ~~(prompt.length/3.5);
-    const emphasizedText = await invokeLLM(prompt, tokens);
+
+    const emphasizedText = await invokeLLM(prompt, getMaxTokens(prompt));
     console.log("emphasizeQuestions", "prompt", prompt);
     console.log("emphasizeQuestions", "emphasizedText", emphasizedText);
-    const parsedOutput = emphasizedText.matchAll(/[\n.]*Thought:(.*)[\n.]*Output:(.*)/mg);
+    const parsedOutput = emphasizedText.match(/[\n|.]*Thought:\n*(.*)Output:\n*(.*)/s);
     console.log("emphasizeQuestions", "parsedOutput", parsedOutput);
-    const emphasized = parsedOutput.map((question) => {
-        return {
-            thought: question[1].trim(),
-            output: question[2].trim(),
-        };
-    });
+    const emphasized = {
+        thought: parsedOutput[1].trim(),
+        output: parsedOutput[2].trim(),
+    }
     console.log("emphasizeQuestions", "emphasized", emphasized);
     return emphasized;
 }
+
+const fixFormat = async (text, format) => {
+    const prompt = `
+The text is potentially not in the correct format.
+Fix the format of the text.
+Use the following format:
+
+Text: the source text you want to fix the format for.
+Format: the format the text should be in.
+Thought: you should always think about what to do.
+Output: the fixed text using the correct format. Output just the content of the ${format}.
+
+Begin! Remember to use the correct format.
+
+Text: ${text}
+Format: ${formatInstrucions[format]}`.trim();
+
+    const fixedText = await invokeLLM(prompt, getMaxTokens(prompt));
+    console.log("fixFormat", "prompt", prompt);
+    console.log("fixFormat", "fixedText", fixedText);
+    const parsedOutput = fixedText.match(/[\n|.]*Thought:\n*(.*)Output:\n*(.*)/s);
+    console.log("fixFormat", "parsedOutput", parsedOutput);
+    const fixed = {
+        thought: parsedOutput[1].trim(),
+        output: parsedOutput[2].trim(),
+    };
+    console.log("fixFormat", "fixed", fixed);
+    return fixed;
+};

@@ -1,5 +1,5 @@
-import React, {useState, useRef, useEffect} from "react";
-import {invokePipeline} from "../Helpers/refine";
+import React, { useState, useRef, useEffect } from "react";
+import { invokePipeline } from "../Helpers/refine";
 
 const setSessionData = (name, value) => {
   try {
@@ -39,23 +39,32 @@ const Chat = ({ getEditorText, setFormattedValue, state }) => {
         text: message,
       }]);
 
+      var messages = [...chatMessages, {
+        id: chatMessages.length + 1,
+        author: "User",
+        text: message,
+      }];
       setMessage("");
-      const transformed = await invokePipeline(getEditorText(), message);
-      // const chatResponse = transformed.observation;
-      // const transformedText = transformed.output;
-      // updateChatMessages([...chatMessages, {
-      //   id: chatMessages.length + 1,
-      //   author: "User",
-      //   text: message,
-      // }, {
-      //   id: chatMessages.length + 2,
-      //   author: "Bot",
-      //   text: chatResponse,
-      // }]);
-
-      // const value = transformedText.replace(/(?:\r\n|\r|\n|\\n)/g, '\n').trim().replace(/\n/g, '<br>');
-      // setFormattedValue(value);
-    }
+      updateChatMessages(messages);
+      for await (const transformed of invokePipeline(getEditorText(), message)) {
+        console.log(transformed);
+        console.log(typeof transformed);
+        if (transformed.output === undefined) {
+          const chatResponse = transformed;
+          messages = [...messages, {
+            id: chatMessages.length + 2,
+            author: "Bot",
+            text: chatResponse,
+          }];
+          updateChatMessages(messages);
+        } else {
+          const transformedText = transformed.output;
+          const value = transformedText.replace(/(?:\r\n|\r|\n|\\n)/g, '\n').trim().replace(/\n/g, '<br>');
+          setFormattedValue(value);
+          return;
+        }
+      };
+    };
   };
 
   const handleKeyDown = (event) => {
@@ -83,7 +92,7 @@ const Chat = ({ getEditorText, setFormattedValue, state }) => {
                   className={`relative p-3 rounded-lg ${isMyMessage(chatMessage.author)
                     ? "bg-blue-200 text-right mr-1"
                     : "bg-gray-200 ml-1"
-                  }`}
+                    }`}
                 >
                   <p>{chatMessage.text}</p>
                 </div>
@@ -95,7 +104,7 @@ const Chat = ({ getEditorText, setFormattedValue, state }) => {
 
       <div className="">
         <textarea
-          onChange={(event) => setMessage(event.target.value)} onKeyDown={handleKeyDown}
+          onChange={(event) => setMessage(event.target.value)} onKeyDown={(event) => setTimeout(() => handleKeyDown(event), 0)}
           placeholder="Enter message..."
           value={message}
           className="w-full p-2 border rounded-md resize-none mb-2"
@@ -112,5 +121,4 @@ const Chat = ({ getEditorText, setFormattedValue, state }) => {
     </div>
   );
 };
-
 export default Chat;

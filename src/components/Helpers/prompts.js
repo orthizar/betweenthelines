@@ -1,37 +1,28 @@
-export const correctionsPrompt = (text) => {
+const formatInstrucions = {
+    email: `
+The text must be in the format of an email.
+Parts of an email:
+- Opening
+- Body
+- Closing
+- Signature`.trim(),
+};
+
+export const transformTextPrompt = (text, format, transformationCommand) => {
     return `
-    Correct the following text delimited by triple quotes and provide corrections in a JSON array format. Only correct what is actually wrong. Use the following structure:
-    {
-        "corrections": [
-            {
-            "start": number,
-            "end": number,
-            "correction": string,
-            "explanation": string
-            }
-        ]
-    }
+Execute the following transformation commands for me.
+Use the following format:
 
-    If there are no mistakes, keep the array empty:
-    {
-        "corrections": []
-    }
+Text: the source text you want to transform
+Format: the format the text should be in
+Transformation: the transformations you should do to the source text
+Thought: you should always think about what to do
+Output: the transformed text in the correct format
+Observation: Describe what you did in max 15 words
 
-    start is the start index of the characters to be corrected.
-    end is the end index of the characters to be corrected.
-    Make sure that start and end are correct and the range can be replaced with the correction. The first character has index 0.
-    Correction are the corrected characters.
-    Explaination is to explain why the correction is necessary.
-    Text to be corrected:
-    """${text}"""`
-}
-export const improvementPrompt = (improvementType, text) => {
-    return `Make this text ${improvementType} and correct all spelling mistakes : ${text}`;
-}
+Begin! Remember to use the correct format.
+Text: ${text}
+Format: ${formatInstrucions[format]}
+Transformation: ${transformationCommand}`.trim();
+};
 
-export const chatPrompt = (chatText, text) => {
-    return `
-    This is my current Context: """${text}""", Please do this Command: """${chatText}""",
-    
-    Output should contain just the body of the Mail body, followed by a "---"  and sone sentence saying what you did `;
-}
