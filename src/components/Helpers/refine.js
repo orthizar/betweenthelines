@@ -84,6 +84,7 @@ export async function* invokePipeline(text, transformationCommand) {
                     }
                 }
                 if (step > 5) {
+                    yield await Promise.resolve("Applying changes to the text.");
                     yield await Promise.resolve(enriched);
                     step++;
                 }

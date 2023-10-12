@@ -13,6 +13,7 @@ const Chat = ({ getEditorText, setFormattedValue, state }) => {
   const chatContainerRef = useRef(null);
   const [chatMessages, setChatMessages] = useState(state);
   const [message, setMessage] = useState("")
+  const [chatInputDisabled, setChatInputDisabled] = useState(false);
 
   useEffect(() => {
     scrollToBottom();
@@ -46,9 +47,8 @@ const Chat = ({ getEditorText, setFormattedValue, state }) => {
       }];
       setMessage("");
       updateChatMessages(messages);
+      setChatInputDisabled(true);
       for await (const transformed of invokePipeline(getEditorText(), message)) {
-        console.log(transformed);
-        console.log(typeof transformed);
         if (transformed.output === undefined) {
           const chatResponse = transformed;
           messages = [...messages, {
@@ -64,6 +64,7 @@ const Chat = ({ getEditorText, setFormattedValue, state }) => {
           return;
         }
       };
+      setChatInputDisabled(false);
     };
   };
 
@@ -106,6 +107,7 @@ const Chat = ({ getEditorText, setFormattedValue, state }) => {
         <textarea
           onChange={(event) => setMessage(event.target.value)} onKeyDown={(event) => setTimeout(() => handleKeyDown(event), 0)}
           placeholder="Enter message..."
+          disabled={chatInputDisabled}
           value={message}
           className="w-full p-2 border rounded-md resize-none mb-2"
           rows="2"
