@@ -1,50 +1,66 @@
 import { CHAT_LABEL, HISTORY_LABEL } from "../Constants";
 import React, { useState } from "react";
 
-import Chat from "../Chat";
-import History from "../History";
-import Menu from "../Menu";
+import Chat from "../Chat/index";
+import History from "../History/index";
+import Menu from "../Menu/index";
 
 const getSessionData = (name) => {
-    try {
-        return sessionStorage.getItem(name);
-    } catch (e) {
-        console.error("Failed to retrieve session data:", e);
-        return null;
-    }
+  try {
+    return sessionStorage.getItem(name);
+  } catch (e) {
+    console.error("Failed to retrieve session data:", e);
+    return null;
+  }
 };
 
-const WindowControl = ({ getEditorText, setFormattedValue }) => {
-    const [activeMenuItem, setActiveMenuItem] = useState("chat");
+const WindowControl = ({
+  getPlainText,
+  setTextWithHtml,
+  activeVersion,
+  setActiveVersion,
+}) => {
+  const [activeMenuItem, setActiveMenuItem] = useState("chat");
+  const cookieValue = getSessionData("chatMessages");
 
-    const cookieValue = getSessionData('chatMessages');
-    const initialChatMessages = cookieValue ? JSON.parse(cookieValue) : [{
-        id: 1,
-        author: "Bot",
-        text: "Hello, how may I help you?"
-    }];
+  const initialChatMessages = cookieValue
+    ? JSON.parse(cookieValue)
+    : [
+        {
+          id: 1,
+          author: "Bot",
+          text: "Hello, how may I help you?",
+        },
+      ];
 
-    const activeComponent =
-        (activeMenuItem === CHAT_LABEL && (
-            <Chat
-                getEditorText={getEditorText}
-                setFormattedValue={setFormattedValue}
-                state={initialChatMessages}
-            />
-        )) ||
-        (activeMenuItem === HISTORY_LABEL && <History/>);
+  const activeComponent =
+    (activeMenuItem === CHAT_LABEL && (
+      <Chat
+        getPlainText={getPlainText}
+        setTextWithHtml={setTextWithHtml}
+        state={initialChatMessages}
+      />
+    )) ||
+    (activeMenuItem === HISTORY_LABEL && (
+      <History
+        getPlainText={getPlainText}
+        setTextWithHtml={setTextWithHtml}
+        activeVersion={activeVersion}
+        setActiveVersion={setActiveVersion}
+      />
+    ));
 
-    return (
-        <div className="bg-white shadow-xl p-8 rounded-lg w-full sm:w-2/5 flex flex-col sm:mr-6">
-            <div className="flex justify-between items-center mb-4">
-                <Menu
-                    activeMenuItem={activeMenuItem}
-                    setActiveMenuItem={setActiveMenuItem}
-                />
-            </div>
-            {activeComponent}
-        </div>
-    );
+  return (
+    <div className="bg-white shadow-xl p-8 rounded-lg w-full sm:w-2/5 flex flex-col sm:mr-6">
+      <div className="flex justify-between items-center mb-4">
+        <Menu
+          activeMenuItem={activeMenuItem}
+          setActiveMenuItem={setActiveMenuItem}
+        />
+      </div>
+      {activeComponent}
+    </div>
+  );
 };
 
 export default WindowControl;
