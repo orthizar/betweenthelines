@@ -1,13 +1,13 @@
-import React, { useState, version } from "react";
+import React, { useState } from "react";
 import {
-  createVersion,
   getTextFromVersion,
-  getVersion,
   getVersions,
   saveVersion,
 } from "../Helpers/versions";
 
 import classNames from "classnames";
+
+g;
 
 const History = ({ getPlainText, setTextWithHtml }) => {
   const [activeVersion, setActiveVersion] = useState();
@@ -17,13 +17,8 @@ const History = ({ getPlainText, setTextWithHtml }) => {
   const activeStyles = "bg-gray-300";
   const inActiveStyles = "bg-gray-200";
 
-  const doesTextExist = (currentText) => {
-    console.log("xxx", getVersions());
-    const textExists = getVersions().some(
-      ({ text }) => text.trim() === currentText.trim()
-    );
-    return textExists;
-  };
+  const doesTextExist = (currentText) =>
+    getVersions().some(({ text }) => text.trim() === currentText.trim());
 
   const handleVersionPress = (versionId) => {
     const currentTextInEditor = getPlainText();
@@ -33,8 +28,6 @@ const History = ({ getPlainText, setTextWithHtml }) => {
     !doesTextExist(currentTextInEditor) &&
       editorIsNotEmpty &&
       saveVersion(versionId, currentTextInEditor);
-
-    console.log("getVersions", getVersions());
 
     setTextWithHtml(pressedVersionText);
     setActiveVersion(versionId);
