@@ -21,11 +21,17 @@ const WindowControl = ({
   setActiveVersion,
 }) => {
   const [activeMenuItem, setActiveMenuItem] = useState("chat");
-
   const cookieValue = getSessionData("chatMessages");
+
   const initialChatMessages = cookieValue
     ? JSON.parse(cookieValue)
-    : [{ id: 1, author: "Bot", text: "Hello, how may I help you?" }];
+    : [
+        {
+          id: 1,
+          author: "Bot",
+          text: "Hello, how may I help you?",
+        },
+      ];
 
   const activeComponent =
     (activeMenuItem === CHAT_LABEL && (
@@ -45,7 +51,7 @@ const WindowControl = ({
     ));
 
   return (
-    <div className="bg-white shadow-xl p-8 rounded-lg w-2/5 flex flex-col mr-6">
+    <div className="bg-white shadow-xl p-8 rounded-lg w-full sm:w-2/5 flex flex-col sm:mr-6">
       <div className="flex justify-between items-center mb-4">
         <Menu
           activeMenuItem={activeMenuItem}
