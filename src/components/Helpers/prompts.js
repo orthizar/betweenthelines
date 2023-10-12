@@ -114,19 +114,3 @@ Transformed Text: ${transformedText}
 Layout: ${formatInstrucions[format]}
 Information: ${formattedQuestions}`.trim();
 };
-
-export const fixFormatPrompt = (text, format) => {
-    return `
-Fix the layout of the text.
-Use the following format:
-
-Text: the source text you want to fix the format for
-Layout: the layout the text should be in
-Thought: you should always think about what to do
-Output: the fixed text using the correct layout. Do not change the content, but just the layout and add missing parts. Output is just the body of the ${format}.
-
-Begin! Remember to use the correct format.
-
-Text: ${text}
-Layout: ${formatInstrucions[format]}`.trim();
-};

@@ -1,6 +1,6 @@
 import { invokeLLM } from "./request";
 
-import { transformTextPrompt, generateQuestionsPrompt, answerQuestionsPrompt, validateAnswersPrompt, enrichTextPrompt, fixFormatPrompt } from "./prompts";
+import { transformTextPrompt, generateQuestionsPrompt, answerQuestionsPrompt, validateAnswersPrompt, enrichTextPrompt } from "./prompts";
 
 const maxRetries = 10;
 
@@ -84,12 +84,6 @@ export async function* invokePipeline(text, transformationCommand) {
                     }
                 }
                 if (step > 5) {
-                    // console.debug("fixed")
-                    // yield await Promise.resolve("Checking text format.");
-                    // const fixed = await fixFormat(enriched.output, format);
-                    // yield await Promise.resolve(fixed.thought);
-                    // console.log("fixed", fixed);
-                    // yield await Promise.resolve(fixed);
                     yield await Promise.resolve(enriched);
                     step++;
                 }
@@ -201,18 +195,3 @@ const enrichText = async (text, transformedText, questions, transformationComman
     console.log("emphasizeQuestions", "enriched", enriched);
     return enriched;
 }
-
-const fixFormat = async (text, format) => {
-    const prompt = fixFormatPrompt(text, format);
-    const fixedText = await invokeLLM(prompt, getMaxTokens(prompt));
-    console.log("fixFormat", "prompt", prompt);
-    console.log("fixFormat", "fixedText", fixedText);
-    const parsedOutput = fixedText.match(/[\n|.]*Thought:\n*(.*)Output:\n*(.*)/si);
-    console.log("fixFormat", "parsedOutput", parsedOutput);
-    const fixed = {
-        thought: parsedOutput[1].trim(),
-        output: parsedOutput[2].trim(),
-    };
-    console.log("fixFormat", "fixed", fixed);
-    return fixed;
-};
