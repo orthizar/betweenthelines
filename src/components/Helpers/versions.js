@@ -5,24 +5,15 @@ export const getVersions = () => {
   return versions;
 };
 
-export const getVersion = (versionId) => {
-  const versions = getVersions();
-  const version = versions.filter((versions) => versions.id === versionId);
-  return version;
-};
+export const getVersion = (versionId) =>
+  getVersions().filter((versions) => versions.id === versionId);
 
-export const getTextFromVersion = (versionId) => {
-  return getVersion(versionId)[0].text;
-};
+export const getTextFromVersion = (versionId) => getVersion(versionId)[0].text;
 
-export const getDescriptionFromVersion = (versionId) => {
-  return getVersion(versionId)[0].description;
-};
+export const getDescriptionFromVersion = (versionId) =>
+  getVersion(versionId)[0].description;
 
-export const getTextFromLatestVersion = () => {
-  const versions = getVersions();
-  return versions[versions.length - 1].text;
-};
+export const getIndexFromLatestVersion = () => getVersions().length - 1;
 
 export const createVersion = (description, textInEditor, newText) => {
   const versions = getVersions();

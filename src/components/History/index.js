@@ -1,10 +1,10 @@
-import React, { useState } from "react";
 import {
   getTextFromVersion,
   getVersions,
   saveVersion,
 } from "../Helpers/versions";
 
+import React from "react";
 import classNames from "classnames";
 
 const commonStyles =
@@ -12,9 +12,12 @@ const commonStyles =
 const activeStyles = "bg-gray-300";
 const inActiveStyles = "bg-gray-200";
 
-const History = ({ getPlainText, setTextWithHtml }) => {
-  const [activeVersion, setActiveVersion] = useState();
-
+const History = ({
+  getPlainText,
+  setTextWithHtml,
+  activeVersion,
+  setActiveVersion,
+}) => {
   const doesTextExist = (currentText) =>
     getVersions().some(({ text }) => text.trim() === currentText.trim());
 

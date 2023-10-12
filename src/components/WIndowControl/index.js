@@ -14,7 +14,12 @@ const getSessionData = (name) => {
   }
 };
 
-const WindowControl = ({ getPlainText, setTextWithHtml }) => {
+const WindowControl = ({
+  getPlainText,
+  setTextWithHtml,
+  activeVersion,
+  setActiveVersion,
+}) => {
   const [activeMenuItem, setActiveMenuItem] = useState("chat");
 
   const cookieValue = getSessionData("chatMessages");
@@ -31,7 +36,12 @@ const WindowControl = ({ getPlainText, setTextWithHtml }) => {
       />
     )) ||
     (activeMenuItem === HISTORY_LABEL && (
-      <History getPlainText={getPlainText} setTextWithHtml={setTextWithHtml} />
+      <History
+        getPlainText={getPlainText}
+        setTextWithHtml={setTextWithHtml}
+        activeVersion={activeVersion}
+        setActiveVersion={setActiveVersion}
+      />
     ));
 
   return (
