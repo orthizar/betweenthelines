@@ -10,7 +10,6 @@ import { createVersion } from "../Helpers/versions";
 const ChatGPT = () => {
   const [textWithHTML, setTextWithHtml] = useState();
   const editorRef = React.useRef(null);
-  const [currentEditorState, setCurrentEditorState] = useState("");
 
   const getPlainText = () => {
     return editorRef.current.editor.getText();
@@ -34,9 +33,9 @@ const ChatGPT = () => {
         />
         <div className="bg-white shadow-xl p-8 w-2/5 rounded-lg flex-grow flex flex-col">
           <Editor
-            setTextWithHtml={setTextWithHtml}
+            setFormattedValue={setTextWithHtml}
             editorRef={editorRef}
-            textWithHTML={textWithHTML}
+            formattedValue={textWithHTML}
           />
           <div className="flex justify-between items-center">
             <ButtonGroup handleSubmit={handleButtonGroupSubmit} />

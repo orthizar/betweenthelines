@@ -16,7 +16,7 @@ const spell = nspell({ aff: aff, dic: dic });
 
 var defaultBindings = null;
 
-const Editor = ({ editorRef, textWithHtml, setTextWithHtml }) => {
+const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
   const [spellCheckMistakes, setSpellCheckMistakes] = useState([]);
   const [currentMistake, setCurrentMistake] = useState(null);
   const [editorCorrections, setEditorCorrections] = useState([]);
@@ -224,7 +224,7 @@ const Editor = ({ editorRef, textWithHtml, setTextWithHtml }) => {
   };
 
   const handleEditorChange = (value, delta, source, editor) => {
-    setTextWithHtml(value);
+    setFormattedValue(value);
     if (source === "user") {
       const mistakes = getMistakes(editor.getText());
       setSpellCheckMistakes(mistakes);
@@ -313,7 +313,7 @@ const Editor = ({ editorRef, textWithHtml, setTextWithHtml }) => {
           ref={editorRef}
           theme="snow"
           placeholder="Enter your text here..."
-          value={textWithHtml}
+          value={formattedValue}
           className="w-full h-full border rounded-md text-lg"
           formats={["color", "background"]}
           onChange={handleEditorChange}

@@ -1,11 +1,10 @@
 import React, { useState, version } from "react";
 import {
   createVersion,
-  getDescriptionFromVersion,
-  getTextFromLatestVersion,
   getTextFromVersion,
   getVersion,
   getVersions,
+  saveVersion,
 } from "../Helpers/versions";
 
 import classNames from "classnames";
@@ -19,6 +18,7 @@ const History = ({ getPlainText, setTextWithHtml }) => {
   const inActiveStyles = "bg-gray-200";
 
   const doesTextExist = (currentText) => {
+    console.log("xxx", getVersions());
     const textExists = getVersions().some(
       ({ text }) => text.trim() === currentText.trim()
     );
@@ -30,9 +30,11 @@ const History = ({ getPlainText, setTextWithHtml }) => {
     const editorIsNotEmpty = currentTextInEditor.length > 1;
     const pressedVersionText = getTextFromVersion(versionId);
 
-    !doesTextExist(getPlainText()) &&
+    !doesTextExist(currentTextInEditor) &&
       editorIsNotEmpty &&
-      createVersion("Automatic save", currentTextInEditor);
+      saveVersion(versionId, currentTextInEditor);
+
+    console.log("getVersions", getVersions());
 
     setTextWithHtml(pressedVersionText);
     setActiveVersion(versionId);

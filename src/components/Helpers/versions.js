@@ -49,3 +49,22 @@ export const createVersion = (description, textInEditor, newText) => {
     window.sessionStorage.setItem("versions", JSON.stringify(versions));
   }
 };
+
+export const deleteVersion = (versionId) => {
+  const versions = getVersions();
+  const versionIndex = versions.findIndex(
+    (version) => version.id === versionId
+  );
+
+  if (versionIndex !== -1) {
+    versions.splice(versionIndex, 1);
+    window.sessionStorage.setItem("versions", JSON.stringify(versions));
+  }
+};
+
+export const saveVersion = (versionId, newText) => {
+  let versions = getVersions();
+
+  versions[versionId].text = newText;
+  window.sessionStorage.setItem("versions", JSON.stringify(versions));
+};
