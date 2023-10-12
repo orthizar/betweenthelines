@@ -29,7 +29,7 @@ import { invokeLLM } from "./request";
 
 export const invokePipeline = async (text, transformationCommand) => {
     console.debug("tranfomed")
-    const transformed = await transform(text, transformationCommand);
+    const transformed = await transformText(text, transformationCommand);
     console.debug("questions")
     const questions = await generateQuestions(text);
     console.debug("sourceAnswers")
@@ -42,9 +42,24 @@ export const invokePipeline = async (text, transformationCommand) => {
     const transformedAnswers = await answerQuestions(transformed.output, goodQuestions);
     console.debug("verifiedTransformedAnswers")
     const verifiedTransformedAnswers = await validateAnswers(transformed.output, goodQuestions, transformedAnswers);
+    var hasFailedAnswers = verifiedTransformedAnswers.some((answer) => !answer.valid);
+    var enriched = transformed;
+    while (hasFailedAnswers) {
+        console.debug("enriched")
+        enriched = await enrichText(text, goodQuestions, transformationCommand);
+        console.debug("emphasizedAnswers")
+        const emphasizedAnswers = await answerQuestions(enriched.output, goodQuestions);
+        console.debug("verifiedEmphasizedAnswers")
+        const verifiedEmphasizedAnswers = await validateAnswers(enriched.output, goodQuestions, emphasizedAnswers);
+        hasFailedAnswers = verifiedEmphasizedAnswers.some((answer) => !answer.valid);
+    }
+    console.debug("fixed")
+    const fixed = await fixFormat(enriched.output);
+    console.log("fixed", fixed);
+    return fixed;
 };
 
-const transform = async (text, transformationCommand) => {
+const transformText = async (text, transformationCommand) => {
     const format = "email";
     const prompt = `
 Execute the following transformation commands for me.
@@ -176,3 +191,40 @@ Answers: ${formattedAnswers}`.trim();
     console.log("validateAnswers", "results", results);
     return results;
 };
+
+// the following function should be used to include the failed questions in the transformed text
+const enrichText = async (text, questions, transformationCommand) => {
+    const formattedQuestions = "["+questions.join(",")+"]";
+    const prompt = `
+The text was transformed but is missing some information.
+Include the information in the retransformed text but make sure to be in line with the transformation command.
+Use the following format:
+
+Text: the source text you want to transform
+Transformation: the transformations you should do to the source text
+Transformed Text: the transformed text that is missing information
+Information: the information you want to make sure is included in the transformed text
+Thought: you should always think about what to do.
+Output: the retransformed text in format of the text form "${format}".
+
+Begin! Remember to use the correct format.
+
+Text: ${text}
+Transformation: ${transformationCommand}
+Transformed Text: ${text}
+Information: ${formattedQuestions}`.trim();
+    const tokens = 4096 - ~~(prompt.length/3.5);
+    const emphasizedText = await invokeLLM(prompt, tokens);
+    console.log("emphasizeQuestions", "prompt", prompt);
+    console.log("emphasizeQuestions", "emphasizedText", emphasizedText);
+    const parsedOutput = emphasizedText.matchAll(/[\n.]*Thought:(.*)[\n.]*Output:(.*)/mg);
+    console.log("emphasizeQuestions", "parsedOutput", parsedOutput);
+    const emphasized = parsedOutput.map((question) => {
+        return {
+            thought: question[1].trim(),
+            output: question[2].trim(),
+        };
+    });
+    console.log("emphasizeQuestions", "emphasized", emphasized);
+    return emphasized;
+}
