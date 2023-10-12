@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
+import { invokePipeline } from "../Helpers/refine";
 
-import { sendChatGptRequest } from "../Helpers/request";
 
 const setSessionData = (name, value) => {
   try {
@@ -10,9 +10,10 @@ const setSessionData = (name, value) => {
   }
 };
 
-const Chat = ({ getPlainText, setTextWithHtml, state }) => {
+const Chat = ({ getPlainText, setTextWithHtml, state, shouldRefine }) => {
   const chatContainerRef = useRef(null);
   const [chatMessages, setChatMessages] = useState(state);
+  const [chatInputDisabled, setChatInputDisabled] = useState(false);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
@@ -44,30 +45,33 @@ const Chat = ({ getPlainText, setTextWithHtml, state }) => {
         },
       ]);
 
+      var messages = [...chatMessages, {
+        id: chatMessages.length + 1,
+        author: "User",
+        text: message,
+      }];
       setMessage("");
-      const gptResponse = await sendChatGptRequest(message, getPlainText());
-      const gptResponseChat = gptResponse.split("---")[1];
-      const gptResponseEditor = gptResponse.split("---")[0];
-      updateChatMessages([
-        ...chatMessages,
-        {
-          id: chatMessages.length + 1,
-          author: "User",
-          text: message,
-        },
-        {
-          id: chatMessages.length + 2,
-          author: "Bot",
-          text: gptResponseChat,
-        },
-      ]);
-
-      const value = gptResponseEditor
-        .replace(/(?:\r\n|\r|\n|\\n)/g, "\n")
-        .trim()
-        .replace(/\n/g, "<br>");
-      setTextWithHtml(value);
-    }
+      updateChatMessages(messages);
+      setChatInputDisabled(true);
+      for await (const transformed of invokePipeline(getPlainText(), message, shouldRefine)) {
+        if (transformed.output === undefined) {
+          const chatResponse = transformed;
+          messages = [...messages, {
+            id: messages.length + 1,
+            author: "Bot",
+            text: chatResponse,
+          }];
+          updateChatMessages(messages);
+        } else {
+          const transformedText = transformed.output;
+          const value = transformedText.replace(/(?:\r\n|\r|\n|\\n)/g, '\n').trim().replace(/\n/g, '<br>');
+          setTextWithHtml(value);
+          setChatInputDisabled(false);
+          return;
+        }
+      };
+      setChatInputDisabled(false);
+    };
   };
 
   const handleKeyDown = (event) => {
@@ -87,16 +91,14 @@ const Chat = ({ getPlainText, setTextWithHtml, state }) => {
           {chatMessages.map((chatMessage) => (
             <div
               key={chatMessage.id}
-              className={`flex flex-col mb-3 ${
-                isMyMessage(chatMessage.author) ? "items-end" : "items-start"
-              }`}
+              className={`flex flex-col mb-3 ${isMyMessage(chatMessage.author) ? "items-end" : "items-start"
+                }`}
             >
               <div
-                className={`text-xs mb-1 ${
-                  isMyMessage(chatMessage.author)
+                className={`text-xs mb-1 ${isMyMessage(chatMessage.author)
                     ? "text-gray-600 mr-1"
                     : "text-gray-600 ml-1"
-                }`}
+                  }`}
               >
                 {!isMyMessage(chatMessage.author) && (
                   <div className="text-xs mb-1 text-gray-600">
@@ -106,11 +108,10 @@ const Chat = ({ getPlainText, setTextWithHtml, state }) => {
               </div>
               <div className={"max-w-[15rem]"}>
                 <div
-                  className={`relative p-3 rounded-lg ${
-                    isMyMessage(chatMessage.author)
+                  className={`relative p-3 rounded-lg ${isMyMessage(chatMessage.author)
                       ? "bg-blue-200 text-right mr-1"
                       : "bg-gray-200 ml-1"
-                  }`}
+                    }`}
                 >
                   <p className={"text-left"}>{chatMessage.text}</p>
                 </div>
@@ -122,9 +123,9 @@ const Chat = ({ getPlainText, setTextWithHtml, state }) => {
 
       <div className="">
         <textarea
-          onChange={(event) => setMessage(event.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="Enter message..."
+          onChange={(event) => setMessage(event.target.value)} onKeyDown={(event) => setTimeout(() => handleKeyDown(event), 0)}
+          placeholder={chatInputDisabled ? "Please wait..." : "Type your message here..."}
+          disabled={chatInputDisabled}
           value={message}
           className="w-full p-2 border rounded-md resize-none mb-2"
           rows="2"
@@ -140,5 +141,4 @@ const Chat = ({ getPlainText, setTextWithHtml, state }) => {
     </div>
   );
 };
-
 export default Chat;

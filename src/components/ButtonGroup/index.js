@@ -1,7 +1,6 @@
-import { createVersion, getIndexFromLatestVersion } from "../Helpers/versions";
-
 import React from "react";
-import { sendButtonRequest } from "../Helpers/request";
+import { createVersion, getIndexFromLatestVersion } from "../Helpers/versions";
+import { invokePipeline } from "../Helpers/refine";
 
 const buttons = [
   {
@@ -28,17 +27,31 @@ const buttons = [
 
 const ButtonGroup = ({
   setTextWithHtml,
-  editorRef,
   getPlainText,
   setActiveVersion,
+  shouldRefine,
 }) => {
-  const handleButtonGroupSubmit = (event, improvementType) => {
+  const handleButtonGroupSubmit = async (event, improvementType) => {
     event.preventDefault();
 
-    sendButtonRequest(editorRef, improvementType).then((result) => {
-      createVersion(`Button: ${improvementType}`, getPlainText(), result);
-      setTextWithHtml(result);
-    });
+    const message = (improvementType) => {
+      switch (improvementType) {
+        case "Improve":
+          return "Improve the text.";
+        default:
+          return "Make the text more " + improvementType.toLowerCase() + ".";
+      }
+    };
+
+    for await (const transformed of invokePipeline(getPlainText(), message(improvementType), shouldRefine)) {
+      if (transformed.output !== undefined) {
+        const transformedText = transformed.output;
+        const newText = transformedText.replace(/(?:\r\n|\r|\n|\\n)/g, '\n').trim().replace(/\n/g, '<br>');
+        createVersion(transformed.observation, getPlainText(), newText);
+        setTextWithHtml(newText);
+        return;
+      };
+    };
 
     setActiveVersion(getIndexFromLatestVersion() + 2);
   };

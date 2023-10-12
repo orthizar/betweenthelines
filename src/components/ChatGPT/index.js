@@ -1,5 +1,4 @@
-import React, { useCallback, useLayoutEffect, useState } from "react";
-import { sendButtonRequest, sendCorrectionRequest } from "../Helpers/request";
+import React, { useLayoutEffect, useState } from "react";
 
 import ButtonGroup from "../ButtonGroup";
 import Editor from "../Editor";
@@ -23,8 +22,9 @@ const ChatGPT = () => {
   const [textWithHTML, setTextWithHtml] = useState();
   const [activeVersion, setActiveVersion] = useState();
   const [activeTab, setActiveTab] = useState("editor");
+  const [shouldRefine, setShouldRefine] = useState(false);
   const editorRef = React.useRef(null);
-  const [w, h] = useWindowSize();
+  const w = useWindowSize()[0];
 
   const getPlainText = () => {
     if (editorRef.current) {
@@ -55,17 +55,18 @@ const ChatGPT = () => {
       </div>
 
       {/* Components for larger screens */}
-      <div className="sm:flex w-3/4 max-w-6xl h-[37rem]">
+      <div className="sm:flex w-[83%] h-[40rem] justify-between">
         {activeTab === "chat" || w > 640 ? (
           <WindowControl
             setActiveVersion={setActiveVersion}
             setTextWithHtml={setTextWithHtml}
             getPlainText={getPlainText}
             activeVersion={activeVersion}
+            shouldRefine={shouldRefine}
           />
         ) : null}
         <div
-          className={`bg-white shadow-xl p-8 rounded-lg flex-grow flex flex-col  ${
+          className={`bg-white shadow-xl p-8 sm:w-[65%] rounded-lg flex flex-col  ${
             activeTab === "chat" && !(w > 640) ? "hidden" : ""
           }`}
         >
@@ -82,13 +83,15 @@ const ChatGPT = () => {
                 setActiveVersion={setActiveVersion}
                 setTextWithHtml={setTextWithHtml}
                 getPlainText={getPlainText}
-                editorRef={editorRef}
+                shouldRefine={shouldRefine}
               />
             ) : null}
             {activeTab === "editor" || w > 640 ? (
               <Utilities
                 setTextWithHtml={setTextWithHtml}
                 editorRef={editorRef}
+                shouldRefine={shouldRefine}
+                setShouldRefine={setShouldRefine}
               />
             ) : null}
           </div>
