@@ -4,7 +4,7 @@ import { BsCheckLg } from "react-icons/bs";
 import { GoCopy } from "react-icons/go";
 import { RiDeleteBin6Line } from "react-icons/ri";
 
-const Utilities = ({ editorRef, setFormattedValue }) => {
+const Utilities = ({ editorRef, setTextWithHtml }) => {
   const [isCopied, setIsCopied] = useState(false);
 
   const handleCopy = (event) => {
@@ -28,7 +28,7 @@ const Utilities = ({ editorRef, setFormattedValue }) => {
       <RiDeleteBin6Line
         className="text-red-600 cursor-pointer"
         size={28}
-        onClick={() => setFormattedValue("")}
+        onClick={() => setTextWithHtml("")}
       />
     </div>
   );

@@ -10,7 +10,7 @@ import {
 
 import classNames from "classnames";
 
-const History = ({ getCurrentTextInEditor, setFormattedValue }) => {
+const History = ({ getCurrentTextInEditor, setTextWithHtml }) => {
   const [activeVersion, setActiveVersion] = useState();
 
   const commonStyles =
@@ -32,10 +32,12 @@ const History = ({ getCurrentTextInEditor, setFormattedValue }) => {
       isVersionChanged = currentVersion !== currentTextInEditor; // Wenn die version auf welche man jetzt geklickt hat nicht gleich ist wie das, was im editor is dann ist es verändert
     }
 
+    console.log("xxx", currentTextInEditor, pressedVersionText);
+
     newVersionShouldBeCreated &&
       createVersion("Automatic save", currentTextInEditor);
 
-    setFormattedValue(pressedVersionText);
+    setTextWithHtml(pressedVersionText);
     setActiveVersion(versionId);
   };
 

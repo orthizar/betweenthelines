@@ -10,7 +10,7 @@ const setSessionData = (name, value) => {
   }
 };
 
-const Chat = ({ getCurrentTextInEditor, setFormattedValue, state }) => {
+const Chat = ({ getCurrentTextInEditor, setTextWithHtml, state }) => {
   const chatContainerRef = useRef(null);
   const [chatMessages, setChatMessages] = useState(state);
   const [message, setMessage] = useState("");
@@ -69,7 +69,7 @@ const Chat = ({ getCurrentTextInEditor, setFormattedValue, state }) => {
         .replace(/(?:\r\n|\r|\n|\\n)/g, "\n")
         .trim()
         .replace(/\n/g, "<br>");
-      setFormattedValue(value);
+      setTextWithHtml(value);
     }
   };
 

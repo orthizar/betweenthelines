@@ -3,20 +3,21 @@ import "react-quill/dist/quill.snow.css";
 import React, { useState } from "react";
 
 import ReactQuill from "react-quill";
+import nspell from "nspell";
 
-import nspell from 'nspell';
-
-var lang = 'en_US';
-const aff = await fetch(`dictionaries/${lang}/${lang}.aff`).then((r) => r.text());
-const dic = await fetch(`dictionaries/${lang}/${lang}.dic`).then((r) => r.text());
+var lang = "en_US";
+const aff = await fetch(`dictionaries/${lang}/${lang}.aff`).then((r) =>
+  r.text()
+);
+const dic = await fetch(`dictionaries/${lang}/${lang}.dic`).then((r) =>
+  r.text()
+);
 const spell = nspell({ aff: aff, dic: dic });
 
-
-const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
+const Editor = ({ editorRef, textWithHTML, setTextWithHtml }) => {
   const [spellCheckMistakes, setSpellCheckMistakes] = useState([]);
   const [currentMistake, setCurrentMistake] = useState(null);
   const [editorCorrections, setEditorCorrections] = useState([]);
-
 
   const editorModules = {
     toolbar: null,
@@ -25,31 +26,38 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
   // Mistake checking
   const getMistakes = (text) => {
     const words = text.split(/[\n\s]/);
-    return words.map((word) => {
-      var cleanWord = word.replace(/[^a-zA-Z'-]/g, "");
-      var wordStart = word.indexOf(cleanWord);
-      var wordEnd = word.length;
-      if (wordStart === -1) {
-        cleanWord = word;
-        wordStart = 0;
-      } else {
-        wordEnd = wordStart + cleanWord.length;
-      }
-      return !spell.correct(cleanWord) && {
-        start: text.indexOf(word),
-        end: text.indexOf(word) + wordEnd,
-        word: cleanWord,
-      }
-    }).filter((word) => word);
-  }
+    return words
+      .map((word) => {
+        var cleanWord = word.replace(/[^a-zA-Z'-]/g, "");
+        var wordStart = word.indexOf(cleanWord);
+        var wordEnd = word.length;
+        if (wordStart === -1) {
+          cleanWord = word;
+          wordStart = 0;
+        } else {
+          wordEnd = wordStart + cleanWord.length;
+        }
+        return (
+          !spell.correct(cleanWord) && {
+            start: text.indexOf(word),
+            end: text.indexOf(word) + wordEnd,
+            word: cleanWord,
+          }
+        );
+      })
+      .filter((word) => word);
+  };
   const getMistakeFromIndex = (index) => {
     for (var i = 0; i < spellCheckMistakes.length; i++) {
-      if (index >= spellCheckMistakes[i].start && index <= spellCheckMistakes[i].end) {
+      if (
+        index >= spellCheckMistakes[i].start &&
+        index <= spellCheckMistakes[i].end
+      ) {
         return spellCheckMistakes[i];
       }
     }
     return null;
-  }
+  };
 
   // Corrections
 
@@ -57,7 +65,7 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
     const corrections = spell.suggest(mistake.word).slice(0, 5);
     mistake.corrections = corrections;
     return corrections;
-  }
+  };
 
   // Highlighting
 
@@ -95,7 +103,9 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
     );
     if (JSON.stringify(mistake) !== JSON.stringify(currentMistake)) {
       setCurrentMistake(mistake);
-      setEditorCorrections(mistake.corrections || getCorrectionsForMistake(mistake));
+      setEditorCorrections(
+        mistake.corrections || getCorrectionsForMistake(mistake)
+      );
     }
   };
 
@@ -120,17 +130,24 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
     event.preventDefault();
     const mistake = currentMistake;
     const text = editorRef.current.editor.getText();
-    const newText = text.substring(0, mistake.start) + correction + text.substring(mistake.end);
+    const newText =
+      text.substring(0, mistake.start) +
+      correction +
+      text.substring(mistake.end);
     editorRef.current.editor.setText(newText, "silent");
-    editorRef.current.editor.setSelection(mistake.start + correction.length, 0, "silent");
+    editorRef.current.editor.setSelection(
+      mistake.start + correction.length,
+      0,
+      "silent"
+    );
     deselectMistake();
     const mistakes = getMistakes(newText);
     setSpellCheckMistakes(mistakes);
     highlightMistakes(mistakes);
-  }
+  };
 
   const handleEditorChange = (value, delta, source, editor) => {
-    setFormattedValue(value);
+    setTextWithHtml(value);
     if (source === "user") {
       const mistakes = getMistakes(editor.getText());
       setSpellCheckMistakes(mistakes);
@@ -166,11 +183,9 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
           ref={editorRef}
           theme="snow"
           placeholder="Enter your text here"
-          value={formattedValue}
+          value={textWithHTML}
           className="w-full h-full border rounded-md text-lg"
-          formats={
-            ["color", "background"]
-          }
+          formats={["color", "background"]}
           onChange={handleEditorChange}
           onChangeSelection={handleEditorChangeSelection}
           modules={editorModules}

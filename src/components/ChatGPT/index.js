@@ -8,11 +8,11 @@ import WindowControl from "../WIndowControl";
 import { createVersion } from "../Helpers/versions";
 
 const ChatGPT = () => {
-  const [formattedValue, setFormattedValue] = useState();
+  const [textWithHTML, setTextWithHtml] = useState();
   const editorRef = React.useRef(null);
   const [currentEditorState, setCurrentEditorState] = useState("");
 
-  const getCurrentTextInEditor = () => {
+  const getPlainText = () => {
     return editorRef.current.editor.getText();
   };
 
@@ -20,32 +20,30 @@ const ChatGPT = () => {
     event.preventDefault();
 
     sendButtonRequest(editorRef, improvementType).then((result) => {
-      createVersion(
-        `Button: ${improvementType}`,
-        getCurrentTextInEditor(),
-        result
-      );
-      setFormattedValue(result);
+      createVersion(`Button: ${improvementType}`, getPlainText(), result);
+      setTextWithHtml(result);
     });
   };
+
+  console.log("textWithHTML", textWithHTML);
 
   return (
     <div className="p-12 bg-gray-100 min-h-screen flex items-center justify-center">
       <div className="flex w-3/4 max-w-6xl h-[37rem]">
         <WindowControl
-          getCurrentTextInEditor={getCurrentTextInEditor}
-          setFormattedValue={setFormattedValue}
+          getCurrentTextInEditor={getPlainText}
+          setTextWithHtml={setTextWithHtml}
         />
         <div className="bg-white shadow-xl p-8 w-2/5 rounded-lg flex-grow flex flex-col">
           <Editor
-            setFormattedValue={setFormattedValue}
+            setTextWithHtml={setTextWithHtml}
             editorRef={editorRef}
-            formattedValue={formattedValue}
+            textWithHTML={textWithHTML}
           />
           <div className="flex justify-between items-center">
             <ButtonGroup handleSubmit={handleButtonGroupSubmit} />
             <Utilities
-              setFormattedValue={setFormattedValue}
+              setTextWithHtml={setTextWithHtml}
               editorRef={editorRef}
             />
           </div>
