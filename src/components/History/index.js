@@ -7,13 +7,13 @@ import {
 
 import classNames from "classnames";
 
+const commonStyles =
+  "w-full h-20 mb-5 w-full h-20 mb-5 shadow-md p-2 cursor-pointer rounded-lg";
+const activeStyles = "bg-gray-300";
+const inActiveStyles = "bg-gray-200";
+
 const History = ({ getPlainText, setTextWithHtml }) => {
   const [activeVersion, setActiveVersion] = useState();
-
-  const commonStyles =
-    "w-full h-20 mb-5 w-full h-20 mb-5 shadow-md p-2 cursor-pointer rounded-lg";
-  const activeStyles = "bg-gray-300";
-  const inActiveStyles = "bg-gray-200";
 
   const doesTextExist = (currentText) =>
     getVersions().some(({ text }) => text.trim() === currentText.trim());
