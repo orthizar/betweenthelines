@@ -25,13 +25,11 @@ const ChatGPT = () => {
     });
   };
 
-  console.log("textWithHTML", textWithHTML);
-
   return (
     <div className="p-12 bg-gray-100 min-h-screen flex items-center justify-center">
       <div className="flex w-3/4 max-w-6xl h-[37rem]">
         <WindowControl
-          getCurrentTextInEditor={getPlainText}
+          getPlainText={getPlainText}
           setTextWithHtml={setTextWithHtml}
         />
         <div className="bg-white shadow-xl p-8 w-2/5 rounded-lg flex-grow flex flex-col">

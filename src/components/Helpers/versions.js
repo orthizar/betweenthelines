@@ -24,7 +24,7 @@ export const getTextFromLatestVersion = () => {
   return versions[versions.length - 1].text;
 };
 
-export const createVersion = (description, textInEditor, generatedText) => {
+export const createVersion = (description, textInEditor, newText) => {
   const versions = getVersions();
   const isVersion0 = versions.length < 1;
 
@@ -41,7 +41,7 @@ export const createVersion = (description, textInEditor, generatedText) => {
     const newVersion = {
       id: versions.length + 1,
       description: description,
-      text: generatedText,
+      text: newText ? newText : textInEditor,
     };
 
     versions.push(newVersion);

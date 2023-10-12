@@ -14,7 +14,7 @@ const getSessionData = (name) => {
   }
 };
 
-const WindowControl = ({ getCurrentTextInEditor, setTextWithHtml }) => {
+const WindowControl = ({ getPlainText, setTextWithHtml }) => {
   const [activeMenuItem, setActiveMenuItem] = useState("chat");
 
   const cookieValue = getSessionData("chatMessages");
@@ -25,16 +25,13 @@ const WindowControl = ({ getCurrentTextInEditor, setTextWithHtml }) => {
   const activeComponent =
     (activeMenuItem === CHAT_LABEL && (
       <Chat
-        getCurrentTextInEditor={getCurrentTextInEditor}
+        getPlainText={getPlainText}
         setTextWithHtml={setTextWithHtml}
         state={initialChatMessages}
       />
     )) ||
     (activeMenuItem === HISTORY_LABEL && (
-      <History
-        getCurrentTextInEditor={getCurrentTextInEditor}
-        setTextWithHtml={setTextWithHtml}
-      />
+      <History getPlainText={getPlainText} setTextWithHtml={setTextWithHtml} />
     ));
 
   return (

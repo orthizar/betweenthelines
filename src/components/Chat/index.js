@@ -10,7 +10,7 @@ const setSessionData = (name, value) => {
   }
 };
 
-const Chat = ({ getCurrentTextInEditor, setTextWithHtml, state }) => {
+const Chat = ({ getPlainText, setTextWithHtml, state }) => {
   const chatContainerRef = useRef(null);
   const [chatMessages, setChatMessages] = useState(state);
   const [message, setMessage] = useState("");
@@ -45,10 +45,7 @@ const Chat = ({ getCurrentTextInEditor, setTextWithHtml, state }) => {
       ]);
 
       setMessage("");
-      const gptResponse = await sendChatGptRequest(
-        message,
-        getCurrentTextInEditor()
-      );
+      const gptResponse = await sendChatGptRequest(message, getPlainText());
       const gptResponseChat = gptResponse.split("---")[1];
       const gptResponseEditor = gptResponse.split("---")[0];
       updateChatMessages([

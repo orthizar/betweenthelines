@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, version } from "react";
 import {
   createVersion,
   getDescriptionFromVersion,
@@ -10,7 +10,7 @@ import {
 
 import classNames from "classnames";
 
-const History = ({ getCurrentTextInEditor, setTextWithHtml }) => {
+const History = ({ getPlainText, setTextWithHtml }) => {
   const [activeVersion, setActiveVersion] = useState();
 
   const commonStyles =
@@ -18,23 +18,20 @@ const History = ({ getCurrentTextInEditor, setTextWithHtml }) => {
   const activeStyles = "bg-gray-300";
   const inActiveStyles = "bg-gray-200";
 
+  const doesTextExist = (currentText) => {
+    const textExists = getVersions().some(
+      ({ text }) => text.trim() === currentText.trim()
+    );
+    return textExists;
+  };
+
   const handleVersionPress = (versionId) => {
-    const currentTextInEditor = getCurrentTextInEditor();
-    const editorIsNotEmpty = currentTextInEditor.length < 1;
+    const currentTextInEditor = getPlainText();
+    const editorIsNotEmpty = currentTextInEditor.length > 1;
     const pressedVersionText = getTextFromVersion(versionId);
-    const latestVersion = getTextFromLatestVersion(); // letztes item im array
-    var isVersionChanged = latestVersion !== currentTextInEditor; // wenn das letzte item im arrray nicht genau gleich ist wie im editor ist es true
-    const newVersionShouldBeCreated = isVersionChanged && editorIsNotEmpty;
 
-    if (activeVersion !== undefined) {
-      const currentVersion = getTextFromVersion(activeVersion); // die version auf welche man jetzt geclicktz hat
-
-      isVersionChanged = currentVersion !== currentTextInEditor; // Wenn die version auf welche man jetzt geklickt hat nicht gleich ist wie das, was im editor is dann ist es verändert
-    }
-
-    console.log("xxx", currentTextInEditor, pressedVersionText);
-
-    newVersionShouldBeCreated &&
+    !doesTextExist(getPlainText()) &&
+      editorIsNotEmpty &&
       createVersion("Automatic save", currentTextInEditor);
 
     setTextWithHtml(pressedVersionText);
