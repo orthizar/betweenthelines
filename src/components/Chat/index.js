@@ -61,6 +61,7 @@ const Chat = ({ getEditorText, setFormattedValue, state }) => {
           const transformedText = transformed.output;
           const value = transformedText.replace(/(?:\r\n|\r|\n|\\n)/g, '\n').trim().replace(/\n/g, '<br>');
           setFormattedValue(value);
+          setChatInputDisabled(false);
           return;
         }
       };
@@ -106,7 +107,7 @@ const Chat = ({ getEditorText, setFormattedValue, state }) => {
       <div className="">
         <textarea
           onChange={(event) => setMessage(event.target.value)} onKeyDown={(event) => setTimeout(() => handleKeyDown(event), 0)}
-          placeholder="Enter message..."
+          placeholder={chatInputDisabled ? "Please wait..." : "Type your message here..."}
           disabled={chatInputDisabled}
           value={message}
           className="w-full p-2 border rounded-md resize-none mb-2"

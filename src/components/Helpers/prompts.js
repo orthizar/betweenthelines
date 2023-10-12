@@ -14,15 +14,15 @@ Execute the following transformation commands for me.
 Use the following format:
 
 Text: the source text you want to transform
-Format: the format the text should be in
+Layout: the layout the text should be in
 Transformation: the transformations you should do to the source text. Do not make any changes that are not asked for.
 Thought: you should always think about what to do
-Output: the transformed text in the correct format
+Output: the transformed text in the correct layout. Do not include part titles (e.g. "Opening", "Content", "Closing", "Signature") or any other information that is not part of the text.
 Observation: Describe what you did in max 15 words
 
 Begin! Remember to use the correct format.
 Text: ${text}
-Format: ${formatInstrucions[format]}
+Layout: ${formatInstrucions[format]}
 Transformation: ${transformationCommand}`.trim();
 };
 
@@ -104,7 +104,8 @@ Transformed Text: the transformed text that is missing information
 Layout: the layout the text should be in
 Information: the information you want to make sure is included in the transformed text
 Thought: you should always think about what to do.
-Output: the output text that includes the information and is in the correct layout.
+Output: the output text in the correct layout. Do not include part titles (e.g. "Opening", "Content", "Closing", "Signature") or any other information that is not part of the text.
+Observation: Describe what you did in max 15 words
 
 Begin! Remember to use the correct format.
 

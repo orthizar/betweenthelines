@@ -20,7 +20,7 @@ export async function* invokePipeline(text, transformationCommand) {
                 if (step === 0) {
                     console.debug("transformed")
                     transformed = await transformText(text, transformationCommand, format);
-                    yield await Promise.resolve(transformed.thought);
+                    yield await Promise.resolve(transformed.observation);
                     step++;
                 }
                 if (step === 1) {
@@ -63,7 +63,7 @@ export async function* invokePipeline(text, transformationCommand) {
                             console.debug("enriched")
                             yield await Promise.resolve("Enriching text with missing information.");
                             enriched = await enrichText(text, enriched, goodQuestions, transformationCommand, format);
-                            yield await Promise.resolve(enriched.thought);
+                            yield await Promise.resolve(enriched.observation);
                             step++;
                         }
                         if ((step - 6) % 2 === 1) {
@@ -112,12 +112,13 @@ const getMaxTokens = (prompt) => {
 const transformText = async (text, transformationCommand, format) => {
     const prompt = transformTextPrompt(text, transformationCommand, format);
     const transformedText = await invokeLLM(prompt, getMaxTokens(prompt));
-    const parsedOutput = transformedText.match(/(\n|.)*Thought:\n*(.*)Output:\n*(.*)Observation:\n*(.*)/si);
+    const parsedOutput = transformedText.match(/[\n.]*Thought:\n*(.*)Output:\n*(.*)Observation:\n*(.*)/si);
     const transformed = {
-        thought: parsedOutput[2].trim(),
-        output: parsedOutput[3].trim(),
-        observation: parsedOutput[4].trim(),
+        thought: parsedOutput[1].trim(),
+        output: parsedOutput[2].trim(),
+        observation: parsedOutput[3].trim(),
     };
+    console.debug(transformed);
     return transformed;
 };
 
@@ -168,10 +169,11 @@ const validateAnswers = async (text, questions, answers) => {
 const enrichText = async (text, transformedText, questions, transformationCommand, format) => {
     const prompt = enrichTextPrompt(text, transformedText, questions, transformationCommand, format);
     const enrichedText = await invokeLLM(prompt, getMaxTokens(prompt));
-    const parsedOutput = enrichedText.match(/[\n|.]*Thought:\n*(.*)Output:\n*(.*)/si);
+    const parsedOutput = enrichedText.match(/[\n.]*Thought:\n*(.*)Output:\n*(.*)Observation:\n*(.*)/si);
     const enriched = {
         thought: parsedOutput[1].trim(),
         output: parsedOutput[2].trim(),
+        observation: parsedOutput[3].trim(),
     }
     return enriched;
 }
