@@ -7,8 +7,6 @@ import {
 
 import classNames from "classnames";
 
-g;
-
 const History = ({ getPlainText, setTextWithHtml }) => {
   const [activeVersion, setActiveVersion] = useState();
 
