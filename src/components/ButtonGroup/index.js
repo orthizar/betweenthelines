@@ -1,40 +1,55 @@
-import React from "react";
+import { createVersion, getIndexFromLatestVersion } from "../Helpers/versions";
 
-const ButtonGroup = ({ handleSubmit }) => {
-  const buttons = [
-    {
-      id: "improve-button",
-      label: "Improve",
-      color: "bg-blue-400 hover:bg-blue-700",
-    },
-    {
-      id: "professional-button",
-      label: "Professional",
-      color: "bg-green-400 hover:bg-green-700",
-    },
-    {
-      id: "colloquially-button",
-      label: "Colloquially",
-      color: "bg-orange-400 hover:bg-orange-700",
-    },
-    {
-      id: "persuasive-button",
-      label: "Persuasive",
-      color: "bg-indigo-400 hover:bg-indigo-700",
-    },
-    {
-      id: "correct-button",
-      label: "Correct",
-      color: "bg-red-600 hover:bg-red-700",
-    },
-  ];
+import React from "react";
+import { sendButtonRequest } from "../Helpers/request";
+
+const buttons = [
+  {
+    id: "improve-button",
+    label: "Improve",
+    color: "#4285F4",
+  },
+  {
+    id: "professional-button",
+    label: "Professional",
+    color: "#DB4437",
+  },
+  {
+    id: "colloquially-button",
+    label: "Colloquially",
+    color: "#F4B400",
+  },
+  {
+    id: "persuasive-button",
+    label: "Persuasive",
+    color: "#0F9D58",
+  },
+];
+
+const ButtonGroup = ({
+  setTextWithHtml,
+  editorRef,
+  getPlainText,
+  setActiveVersion,
+}) => {
+  const handleButtonGroupSubmit = (event, improvementType) => {
+    event.preventDefault();
+
+    sendButtonRequest(editorRef, improvementType).then((result) => {
+      createVersion(`Button: ${improvementType}`, getPlainText(), result);
+      setTextWithHtml(result);
+    });
+
+    setActiveVersion(getIndexFromLatestVersion() + 2);
+  };
 
   return (
     <div className="space-x-4">
       {buttons.map((button) => (
         <button
           key={button.id}
-          onClick={(event) => handleSubmit(event, button.label)}
+          onClick={(event) => handleButtonGroupSubmit(event, button.label)}
+          style={{ backgroundColor: button.color }}
           className={`text-white py-1 px-2 rounded text-lg ${button.color}`}
         >
           {button.label}
