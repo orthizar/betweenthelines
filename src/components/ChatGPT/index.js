@@ -42,7 +42,7 @@ const ChatGPT = () => {
   const [activeTab, setActiveTab] = useState('editor');
 
   return (
-      <div className="p-4 sm:p-6 md:p-8 lg:p-12 bg-gray-100 min-h-screen flex flex-col sm:flex-row items-center justify-center">
+      <div className="bg-gray-100 min-h-screen flex flex-col sm:flex-row items-center justify-center">
 
         {/* Tab navigation (only on mobile) */}
         <div className="fixed top-4 left-5/9 flex mb-4 sm:hidden">
