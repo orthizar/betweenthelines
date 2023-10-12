@@ -16,11 +16,11 @@ const ChatGPT = () => {
 
   const handleSubmit = (event, improvementType) => {
     event.preventDefault();
-    if (improvementType === "Correct") {
-      sendCorrectionRequest(editorRef);
-    } else {
-      sendButtonRequest(editorRef, improvementType);
-    }
+    // if (improvementType === "Correct") {
+    //   sendCorrectionRequest(editorRef);
+    // } else {
+    //   sendButtonRequest(editorRef, improvementType);
+    // }
   };
 
   return (

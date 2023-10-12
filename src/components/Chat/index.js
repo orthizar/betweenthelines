@@ -52,7 +52,7 @@ const Chat = ({ getEditorText, setFormattedValue, state }) => {
         if (transformed.output === undefined) {
           const chatResponse = transformed;
           messages = [...messages, {
-            id: chatMessages.length + 2,
+            id: messages.length + 1,
             author: "Bot",
             text: chatResponse,
           }];
