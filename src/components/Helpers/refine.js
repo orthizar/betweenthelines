@@ -111,38 +111,27 @@ const getMaxTokens = (prompt) => {
 const transformText = async (text, transformationCommand, format) => {
     const prompt = transformTextPrompt(text, transformationCommand, format);
     const transformedText = await invokeLLM(prompt, getMaxTokens(prompt));
-    console.log("transform", "prompt", prompt);
-    console.log("transform", "transformedText", transformedText);
     const parsedOutput = transformedText.match(/(\n|.)*Thought:\n*(.*)Output:\n*(.*)Observation:\n*(.*)/si);
-    // console.log("transform", "parsedOutput", parsedOutput);
     const transformed = {
         thought: parsedOutput[2].trim(),
         output: parsedOutput[3].trim(),
         observation: parsedOutput[4].trim(),
     };
-    console.log("transform", "transformed", transformed);
     return transformed;
 };
 
 const generateQuestions = async (text) => {
     const prompt = generateQuestionsPrompt(text);
     const generatedQuestions = await invokeLLM(prompt, getMaxTokens(prompt));
-    // console.log("generateQuestions", "prompt", prompt);
-    // console.log("generateQuestions", "generatedQuestions", generatedQuestions);
     const parsedOutput = generatedQuestions.matchAll(/[\n.]*Question:(.*)/mgi).toArray();
-    // console.log("generateQuestions", "parsedOutput", parsedOutput);
     const questions = parsedOutput.map((question) => question[1].trim());
-    // console.log("generateQuestions", "questions", questions);
     return questions;
 };
 
 const answerQuestions = async (text, questions) => {
     const prompt = answerQuestionsPrompt(text, questions);
     const answeredQuestions = await invokeLLM(prompt, getMaxTokens(prompt));
-    // console.log("answerQuestions", "prompt", prompt);
-    // console.log("answerQuestions", "answeredQuestions", answeredQuestions);
     const parsedOutput = answeredQuestions.matchAll(/[\n.]*Question:(.*)[\n.]*Answer:(.*)/mgi).toArray();
-    // console.log("answerQuestions", "parsedOutput", parsedOutput);
     const answers = parsedOutput.map((question) => {
         return {
             question: question[1].trim(),
@@ -154,18 +143,13 @@ const answerQuestions = async (text, questions) => {
             throw new Error("Not all questions were answered.");
         }
     });
-    // console.log("answerQuestions", "answers", answers);
     return answers;
 };
 
 const validateAnswers = async (text, questions, answers) => {
     const prompt = validateAnswersPrompt(text, questions, answers);
-    // console.log("validateAnswers", "getMaxTokens(prompt)", getMaxTokens(prompt))
     const validatedAnswers = await invokeLLM(prompt, getMaxTokens(prompt));
-    console.log("validateAnswers", "prompt", prompt);
-    console.log("validateAnswers", "validateAnswers", validatedAnswers);
     const parsedOutput = validatedAnswers.matchAll(/[\n.]*Question:(.*)[\n.]*Answer:(.*)[\n.]*Valid:(.*)/mgi).toArray();
-    // console.log("validateAnswers", "parsedOutput", parsedOutput);
     const results = parsedOutput.map((question) => {
         return {
             question: question[1].trim(),
@@ -173,7 +157,6 @@ const validateAnswers = async (text, questions, answers) => {
             valid: question[3].trim().toLowerCase() === "yes",
         };
     });
-    console.log("validateAnswers", "results", results);
     if (results.length !== questions.length) {
         throw new Error("Number of questions and answers do not match.");
     }
@@ -184,14 +167,10 @@ const validateAnswers = async (text, questions, answers) => {
 const enrichText = async (text, transformedText, questions, transformationCommand, format) => {
     const prompt = enrichTextPrompt(text, transformedText, questions, transformationCommand, format);
     const enrichedText = await invokeLLM(prompt, getMaxTokens(prompt));
-    console.log("emphasizeQuestions", "prompt", prompt);
-    console.log("emphasizeQuestions", "enrichedText", enrichedText);
     const parsedOutput = enrichedText.match(/[\n|.]*Thought:\n*(.*)Output:\n*(.*)/si);
-    console.log("emphasizeQuestions", "parsedOutput", parsedOutput);
     const enriched = {
         thought: parsedOutput[1].trim(),
         output: parsedOutput[2].trim(),
     }
-    console.log("emphasizeQuestions", "enriched", enriched);
     return enriched;
 }
