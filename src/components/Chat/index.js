@@ -1,4 +1,4 @@
-import React, {useState, useRef, useEffect} from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { sendChatGptRequest } from "../Helpers/request";
 
 const setSessionData = (name, value) => {
@@ -12,11 +12,12 @@ const setSessionData = (name, value) => {
 const Chat = ({ getEditorText, setFormattedValue, state }) => {
   const chatContainerRef = useRef(null);
   const [chatMessages, setChatMessages] = useState(state);
-  const [message, setMessage] = useState("")
+  const [message, setMessage] = useState("");
+  const [image, setImage] = useState(null);
 
   useEffect(() => {
     scrollToBottom();
-  })
+  });
 
   const scrollToBottom = () => {
     if (chatContainerRef.current) {
@@ -58,6 +59,26 @@ const Chat = ({ getEditorText, setFormattedValue, state }) => {
     }
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImage(reader.result);
+        sendImageMessage(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const sendImageMessage = (imageData) => {
+    updateChatMessages([...chatMessages, {
+      id: chatMessages.length + 1,
+      author: "User",
+      image: imageData,
+    }]);
+  };
+
   const handleKeyDown = (event) => {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
@@ -67,7 +88,7 @@ const Chat = ({ getEditorText, setFormattedValue, state }) => {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex-grow overflow-y-auto max-h-[22rem]" ref={chatContainerRef} >
+      <div className="flex-grow overflow-y-auto max-h-[20rem]" ref={chatContainerRef} >
         <div className="mb-6 overflow-y-auto px-4">
           {chatMessages.map((chatMessage) => (
             <div key={chatMessage.id} className={`flex flex-col mb-3 ${isMyMessage(chatMessage.author) ? "items-end" : "items-start"}`}>
@@ -79,21 +100,22 @@ const Chat = ({ getEditorText, setFormattedValue, state }) => {
                 )}
               </div>
               <div className={'max-w-[15rem]'}>
-                <div
-                  className={`relative p-3 rounded-lg ${isMyMessage(chatMessage.author)
-                    ? "bg-blue-200 text-right mr-1"
-                    : "bg-gray-200 ml-1"
-                  }`}
-                >
-                  <p>{chatMessage.text}</p>
+                <div className={`relative p-3 rounded-lg ${isMyMessage(chatMessage.author) ? "bg-blue-200 text-right mr-1" : "bg-gray-200 ml-1"}`}>
+                  {chatMessage.text && <p>{chatMessage.text}</p>}
+                  {chatMessage.image && <img src={chatMessage.image} alt="Uploaded content" className="max-w-full max-h-40" />}
                 </div>
               </div>
             </div>
           ))}
         </div>
       </div>
-
       <div className="">
+        <input
+          type="file"
+          onChange={handleImageChange}
+          accept="image/*"
+          className="mb-2"
+        ></input>
         <textarea
           onChange={(event) => setMessage(event.target.value)} onKeyDown={handleKeyDown}
           placeholder="Enter message..."
