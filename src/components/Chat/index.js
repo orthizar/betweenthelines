@@ -85,7 +85,7 @@ const Chat = ({ getEditorText, setFormattedValue, state }) => {
                     : "bg-gray-200 ml-1"
                   }`}
                 >
-                  <p>{chatMessage.text}</p>
+                  <p className={"text-left"}>{chatMessage.text}</p>
                 </div>
               </div>
             </div>
