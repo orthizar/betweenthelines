@@ -3,7 +3,7 @@ import axios from "axios";
 export const invokeLLM = async (prompt, tokens) => {
   const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
   const apiUrl = "https://api.openai.com/v1/completions";
-  
+
   try {
     const response = await axios.post(
       apiUrl,

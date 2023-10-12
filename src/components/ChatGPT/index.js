@@ -1,5 +1,4 @@
-import React, { useCallback, useLayoutEffect, useState } from "react";
-import { sendButtonRequest, sendCorrectionRequest } from "../Helpers/request";
+import React, { useLayoutEffect, useState } from "react";
 
 import ButtonGroup from "../ButtonGroup";
 import Editor from "../Editor";
@@ -23,8 +22,9 @@ const ChatGPT = () => {
   const [textWithHTML, setTextWithHtml] = useState();
   const [activeVersion, setActiveVersion] = useState();
   const [activeTab, setActiveTab] = useState("editor");
+  const [shouldRefine, setShouldRefine] = useState(false);
   const editorRef = React.useRef(null);
-  const [w, h] = useWindowSize();
+  const w = useWindowSize()[0];
 
   const getPlainText = () => {
     if (editorRef.current) {
@@ -62,6 +62,7 @@ const ChatGPT = () => {
             setTextWithHtml={setTextWithHtml}
             getPlainText={getPlainText}
             activeVersion={activeVersion}
+            shouldRefine={shouldRefine}
           />
         ) : null}
         <div
@@ -82,13 +83,15 @@ const ChatGPT = () => {
                 setActiveVersion={setActiveVersion}
                 setTextWithHtml={setTextWithHtml}
                 getPlainText={getPlainText}
-                editorRef={editorRef}
+                shouldRefine={shouldRefine}
               />
             ) : null}
             {activeTab === "editor" || w > 640 ? (
               <Utilities
                 setTextWithHtml={setTextWithHtml}
                 editorRef={editorRef}
+                shouldRefine={shouldRefine}
+                setShouldRefine={setShouldRefine}
               />
             ) : null}
           </div>

@@ -4,7 +4,7 @@ import { transformTextPrompt, generateQuestionsPrompt, answerQuestionsPrompt, va
 
 const maxRetries = 10;
 
-export async function* invokePipeline(text, transformationCommand) {
+export async function* invokePipeline(text, transformationCommand, refine) {
     try {
         var transformed = undefined;
         var questions = undefined;
@@ -22,6 +22,9 @@ export async function* invokePipeline(text, transformationCommand) {
                     transformed = await transformText(text, transformationCommand, format);
                     yield await Promise.resolve(transformed.observation);
                     step++;
+                }
+                if (!refine) {
+                    step = 15;
                 }
                 if (step === 1) {
                     console.debug("questions")
@@ -57,25 +60,24 @@ export async function* invokePipeline(text, transformationCommand) {
                     step++;
                 }
                 if (step > 5 && step <= 14) {
-                    var enriched = transformed;
                     while (hasFailedAnswers && step <= 14) {
                         if ((step - 6) % 2 === 0) {
                             console.debug("enriched")
                             yield await Promise.resolve("Enriching text with missing information.");
-                            enriched = await enrichText(text, enriched, goodQuestions, transformationCommand, format);
-                            yield await Promise.resolve(enriched.observation);
+                            transformed = await enrichText(text, transformed, goodQuestions, transformationCommand, format);
+                            yield await Promise.resolve(transformed.observation);
                             step++;
                         }
                         if ((step - 6) % 2 === 1) {
                             console.debug("enrichedAnswers")
                             yield await Promise.resolve("Answering questions for self-checking.");
-                            enrichedAnswers = await answerQuestions(enriched.output, goodQuestions);
+                            enrichedAnswers = await answerQuestions(transformed.output, goodQuestions);
                             step++;
                         }
                         if ((step - 6) % 2 === 2) {
                             console.debug("verifiedenrichedAnswers")
                             yield await Promise.resolve("Verifying questions for self-checking.");
-                            const verifiedenrichedAnswers = await validateAnswers(enriched.output, goodQuestions, enrichedAnswers);
+                            const verifiedenrichedAnswers = await validateAnswers(transformed.output, goodQuestions, enrichedAnswers);
                             hasFailedAnswers = verifiedenrichedAnswers.some((answer) => !answer.valid);
                             nValidAnswers = verifiedenrichedAnswers.filter((answer) => answer.valid).length;
                             yield await Promise.resolve("Text information score: " + nValidAnswers + "/" + goodQuestions.length);
@@ -85,7 +87,7 @@ export async function* invokePipeline(text, transformationCommand) {
                 }
                 if (step > 5) {
                     yield await Promise.resolve("Applying changes to the text.");
-                    yield await Promise.resolve(enriched);
+                    yield await Promise.resolve(transformed);
                     step++;
                 }
             } catch (error) {
@@ -165,7 +167,6 @@ const validateAnswers = async (text, questions, answers) => {
     return results;
 };
 
-// the following function should be used to include the failed questions in the transformed text
 const enrichText = async (text, transformedText, questions, transformationCommand, format) => {
     const prompt = enrichTextPrompt(text, transformedText, questions, transformationCommand, format);
     const enrichedText = await invokeLLM(prompt, getMaxTokens(prompt));

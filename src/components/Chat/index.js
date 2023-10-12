@@ -10,7 +10,7 @@ const setSessionData = (name, value) => {
   }
 };
 
-const Chat = ({ getPlainText, setTextWithHtml, state }) => {
+const Chat = ({ getPlainText, setTextWithHtml, state, shouldRefine }) => {
   const chatContainerRef = useRef(null);
   const [chatMessages, setChatMessages] = useState(state);
   const [chatInputDisabled, setChatInputDisabled] = useState(false);
@@ -53,7 +53,7 @@ const Chat = ({ getPlainText, setTextWithHtml, state }) => {
       setMessage("");
       updateChatMessages(messages);
       setChatInputDisabled(true);
-      for await (const transformed of invokePipeline(getEditorText(), message)) {
+      for await (const transformed of invokePipeline(getPlainText(), message, shouldRefine)) {
         if (transformed.output === undefined) {
           const chatResponse = transformed;
           messages = [...messages, {
@@ -65,7 +65,7 @@ const Chat = ({ getPlainText, setTextWithHtml, state }) => {
         } else {
           const transformedText = transformed.output;
           const value = transformedText.replace(/(?:\r\n|\r|\n|\\n)/g, '\n').trim().replace(/\n/g, '<br>');
-          setFormattedValue(value);
+          setTextWithHtml(value);
           setChatInputDisabled(false);
           return;
         }
@@ -91,16 +91,14 @@ const Chat = ({ getPlainText, setTextWithHtml, state }) => {
           {chatMessages.map((chatMessage) => (
             <div
               key={chatMessage.id}
-              className={`flex flex-col mb-3 ${
-                isMyMessage(chatMessage.author) ? "items-end" : "items-start"
-              }`}
+              className={`flex flex-col mb-3 ${isMyMessage(chatMessage.author) ? "items-end" : "items-start"
+                }`}
             >
               <div
-                className={`text-xs mb-1 ${
-                  isMyMessage(chatMessage.author)
+                className={`text-xs mb-1 ${isMyMessage(chatMessage.author)
                     ? "text-gray-600 mr-1"
                     : "text-gray-600 ml-1"
-                }`}
+                  }`}
               >
                 {!isMyMessage(chatMessage.author) && (
                   <div className="text-xs mb-1 text-gray-600">
@@ -110,11 +108,10 @@ const Chat = ({ getPlainText, setTextWithHtml, state }) => {
               </div>
               <div className={"max-w-[15rem]"}>
                 <div
-                  className={`relative p-3 rounded-lg ${
-                    isMyMessage(chatMessage.author)
+                  className={`relative p-3 rounded-lg ${isMyMessage(chatMessage.author)
                       ? "bg-blue-200 text-right mr-1"
                       : "bg-gray-200 ml-1"
-                  }`}
+                    }`}
                 >
                   <p className={"text-left"}>{chatMessage.text}</p>
                 </div>
