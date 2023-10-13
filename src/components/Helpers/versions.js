@@ -15,6 +15,14 @@ export const getDescriptionFromVersion = (versionId) =>
 
 export const getIndexFromLatestVersion = () => getVersions().length - 1;
 
+export const generateUUID = () => {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+    var r = (Math.random() * 16) | 0,
+      v = c == "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+};
+
 export const createVersion = (description, textInEditor, newText) => {
   const versions = getVersions();
   const isVersion0 = versions.length < 1;
@@ -30,7 +38,7 @@ export const createVersion = (description, textInEditor, newText) => {
     }
 
     const newVersion = {
-      id: versions.length + 1,
+      id: generateUUID(),
       description: description,
       text: newText ? newText : textInEditor,
     };

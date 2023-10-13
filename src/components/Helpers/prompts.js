@@ -1,5 +1,5 @@
 export const correctionsPrompt = (text) => {
-    return `
+  return `
     Correct the following text delimited by triple quotes and provide corrections in a JSON array format. Only correct what is actually wrong. Use the following structure:
     {
         "corrections": [
@@ -23,15 +23,18 @@ export const correctionsPrompt = (text) => {
     Correction are the corrected characters.
     Explaination is to explain why the correction is necessary.
     Text to be corrected:
-    """${text}"""`
-}
+    """${text}"""`;
+};
 export const improvementPrompt = (improvementType, text) => {
-    return `Make this text ${improvementType} and correct all spelling mistakes : ${text}`;
-}
+  return `Make this text ${improvementType} and correct all spelling mistakes : ${text}`;
+};
 
 export const chatPrompt = (chatText, text) => {
-    return `
+  return `
     This is my current Context: """${text}""", Please do this Command: """${chatText}""",
     
     Output should contain just the body of the Mail body, followed by a "---"  and sone sentence saying what you did `;
-}
+};
+
+export const giveNamePrompt = (text) =>
+  `This is my current Context: """${text}""" please give exactly one matching word for it, it should be the naming of a version`;
