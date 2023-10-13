@@ -9,7 +9,8 @@ function useWindowSize() {
   const [size, setSize] = useState([0, 0]);
   useLayoutEffect(() => {
     function updateSize() {
-      setSize([window.innerWidth, window.innerHeight]);
+      // html clientWidth and clientHeight
+      setSize([document.documentElement.clientWidth, document.documentElement.clientHeight]);
     }
     window.addEventListener("resize", updateSize);
     updateSize();
@@ -24,7 +25,8 @@ const ChatGPT = () => {
   const [activeTab, setActiveTab] = useState("editor");
   const [shouldRefine, setShouldRefine] = useState(false);
   const editorRef = React.useRef(null);
-  const w = useWindowSize()[0];
+  const [w, h] = useWindowSize();
+  const isDesktop = w >= 768;
 
   const getPlainText = () => {
     if (editorRef.current) {
@@ -33,21 +35,19 @@ const ChatGPT = () => {
   };
 
   return (
-    <div className="bg-gray-100 min-h-screen flex flex-col sm:flex-row items-center justify-center">
+    <div className="bg-gray-100 min-h-screen flex flex-col md:flex-row items-center justify-center">
       {/* Tab navigation (only on mobile) */}
-      <div className="fixed top-4 left-5/9 flex mb-4 sm:hidden">
+      <div className="fixed top-4 left-5/9 flex mb-4 md:hidden">
         <button
-          className={`px-4 py-2 ${
-            activeTab === "chat" ? "bg-blue-500 text-white" : "bg-gray-300"
-          }`}
-          onClick={() => setActiveTab("chat")}
+          className={`px-4 py-2 ${activeTab === "tools" ? "bg-blue-500 text-white" : "bg-gray-300"
+            }`}
+          onClick={() => setActiveTab("tools")}
         >
-          Chat
+          Tools
         </button>
         <button
-          className={`px-4 py-2 ${
-            activeTab === "editor" ? "bg-blue-500 text-white" : "bg-gray-300"
-          }`}
+          className={`px-4 py-2 ${activeTab === "editor" ? "bg-blue-500 text-white" : "bg-gray-300"
+            }`}
           onClick={() => setActiveTab("editor")}
         >
           Editor
@@ -55,8 +55,8 @@ const ChatGPT = () => {
       </div>
 
       {/* Components for larger screens */}
-      <div className="sm:flex w-[83%] h-[40rem] justify-between">
-        {activeTab === "chat" || w > 640 ? (
+      <div className="flex w-[83%] h-[40rem] justify-between ">
+        {activeTab === "tools" || isDesktop ? (
           <WindowControl
             setActiveVersion={setActiveVersion}
             setTextWithHtml={setTextWithHtml}
@@ -66,19 +66,19 @@ const ChatGPT = () => {
           />
         ) : null}
         <div
-          className={`bg-white shadow-xl p-8 sm:w-[65%] rounded-lg flex flex-col  ${
-            activeTab === "chat" && !(w > 640) ? "hidden" : ""
-          }`}
+          className={`bg-white shadow-xl p-8 w-full md:w-[65%] rounded-lg flex flex-col  ${activeTab === "tools" && !(isDesktop) ? "hidden" : ""
+            }`}
         >
-          {activeTab === "editor" || w > 640 ? (
+          {activeTab === "editor" || isDesktop ? (
             <Editor
+              isDesktop={isDesktop}
               setFormattedValue={setTextWithHtml}
               formattedValue={textWithHTML}
               editorRef={editorRef}
             />
           ) : null}
           <div className="flex justify-between items-center">
-            {activeTab === "editor" || w > 640 ? (
+            {isDesktop ? (
               <ButtonGroup
                 setActiveVersion={setActiveVersion}
                 setTextWithHtml={setTextWithHtml}
@@ -86,7 +86,7 @@ const ChatGPT = () => {
                 shouldRefine={shouldRefine}
               />
             ) : null}
-            {activeTab === "editor" || w > 640 ? (
+            {activeTab === "editor" || isDesktop ? (
               <Utilities
                 setTextWithHtml={setTextWithHtml}
                 editorRef={editorRef}

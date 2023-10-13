@@ -57,13 +57,13 @@ const ButtonGroup = ({
   };
 
   return (
-    <div className="space-x-4">
+    <div className="flex flex-wrap gap-4">
       {buttons.map((button) => (
         <button
           key={button.id}
           onClick={(event) => handleButtonGroupSubmit(event, button.label)}
           style={{ backgroundColor: button.color }}
-          className={`text-white py-1 px-2 rounded text-lg ${button.color}`}
+          className={`text-white py-1 px-2 rounded w-28 text-lg ${button.color}`}
         >
           {button.label}
         </button>
