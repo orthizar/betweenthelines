@@ -1,6 +1,6 @@
 # Between the lines
 
-This is a web application for a text correction application with various features aimed at enhancing communication within email threads.
+> Enhancing communication within email threads.
 
 ## Features
 
