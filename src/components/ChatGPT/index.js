@@ -25,7 +25,7 @@ const ChatGPT = () => {
   const [activeTab, setActiveTab] = useState("editor");
   const [shouldRefine, setShouldRefine] = useState(false);
   const editorRef = React.useRef(null);
-  const [w, h] = useWindowSize();
+  const w = useWindowSize()[0];
   const isDesktop = w >= 768;
 
   const getPlainText = () => {
