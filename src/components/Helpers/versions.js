@@ -55,7 +55,10 @@ export const deleteVersion = (versionId) => {
 
 export const saveVersion = (versionId, newText) => {
   let versions = getVersions();
+  const existingVersionIndex = versions.findIndex(
+    (version) => version.id === versionId
+  );
 
-  versions[versionId].text = newText;
+  versions[existingVersionIndex].text = newText;
   window.sessionStorage.setItem("versions", JSON.stringify(versions));
 };

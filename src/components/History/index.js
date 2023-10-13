@@ -1,6 +1,7 @@
 import {
   getTextFromVersion,
   getVersions,
+  isLastVersion,
   saveVersion,
 } from "../Helpers/versions";
 
