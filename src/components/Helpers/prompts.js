@@ -115,3 +115,20 @@ Transformed Text: ${transformedText}
 Layout: ${formatInstrucions[format]}
 Information: ${formattedQuestions}`.trim();
 };
+
+export const suggestPrompt = (text, messages) => {
+    const formattedMessages = messages.length > 0? messages.length === 1 ? messages[0] : "[" + messages.join(",") + "]" : "No previous commands.";
+    return `
+Suggest ways to improve the text. Formulate the suggestion as a command.
+Do not repeat previous commands, when not necessary.
+Only suggest commands that are relevant for the text and can be applied to the text via GPT-3.5.
+Use the following format:
+
+Text: the source text you want to predict the next command for.
+Commands: the previous commands that were applied to the text, wrapped in square brackets.
+Command: the predicted command.
+
+Begin! Remember to use the correct format.
+Text: ${text}
+Commands: ${formattedMessages}`.trim();
+};
