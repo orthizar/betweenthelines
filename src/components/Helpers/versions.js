@@ -1,3 +1,5 @@
+import { version } from "react";
+
 export const getVersions = () => {
   const versionsString = window.sessionStorage.getItem("versions");
   const versions = versionsString ? JSON.parse(versionsString) : [];
@@ -15,14 +17,6 @@ export const getDescriptionFromVersion = (versionId) =>
 
 export const getIndexFromLatestVersion = () => getVersions().length - 1;
 
-export const generateUUID = () => {
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
-    var r = (Math.random() * 16) | 0,
-      v = c == "x" ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
-};
-
 export const createVersion = (description, textInEditor, newText) => {
   const versions = getVersions();
   const isVersion0 = versions.length < 1;
@@ -30,7 +24,7 @@ export const createVersion = (description, textInEditor, newText) => {
   if (textInEditor.length > 1) {
     if (isVersion0) {
       const baseVersion = {
-        id: versions.length + 1,
+        id: 1,
         description: "Base",
         text: textInEditor,
       };
@@ -38,7 +32,7 @@ export const createVersion = (description, textInEditor, newText) => {
     }
 
     const newVersion = {
-      id: generateUUID(),
+      id: versions.length + 1,
       description: description,
       text: newText ? newText : textInEditor,
     };
@@ -63,10 +57,14 @@ export const deleteVersion = (versionId) => {
 
 export const saveVersion = (versionId, newText) => {
   let versions = getVersions();
-  const existingVersionIndex = versions.findIndex(
+
+  const versionIndex = versions.findIndex(
     (version) => version.id === versionId
   );
 
-  versions[existingVersionIndex].text = newText;
+  versions[versionIndex].text = newText;
+
+  console.log("versionId", versionId);
+
   window.sessionStorage.setItem("versions", JSON.stringify(versions));
 };

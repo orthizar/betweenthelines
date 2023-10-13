@@ -40,7 +40,7 @@ const ButtonGroup = ({
       setTextWithHtml(result);
     });
 
-    setActiveVersion(getIndexFromLatestVersion() + 2);
+    setActiveVersion();
   };
 
   return (

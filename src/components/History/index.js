@@ -21,40 +21,24 @@ const History = ({
   activeVersion,
   setActiveVersion,
 }) => {
-  const [titles, setTitles] = useState({});
-
   const doesTextExist = (currentText) =>
     getVersions().some(({ text }) => text.trim() === currentText.trim());
 
   const handleVersionPress = (versionId) => {
-    const currentTextInEditor = getPlainText();
-    const editorIsNotEmpty = currentTextInEditor.length > 1;
-    const pressedVersionText = getTextFromVersion(versionId);
+    if (activeVersion !== versionId) {
+      const currentTextInEditor = getPlainText();
+      const editorIsNotEmpty = currentTextInEditor.length > 1;
+      const pressedVersionText = getTextFromVersion(versionId);
 
-    !doesTextExist(currentTextInEditor) &&
-      editorIsNotEmpty &&
-      saveVersion(versionId, currentTextInEditor);
+      !doesTextExist(currentTextInEditor) &&
+        editorIsNotEmpty &&
+        saveVersion(activeVersion, currentTextInEditor);
 
-    setTextWithHtml(pressedVersionText);
-    setActiveVersion(versionId);
+      setTextWithHtml(pressedVersionText);
+      setActiveVersion(versionId);
+    }
   };
 
-  useEffect(() => {
-    const versionPromises = getVersions().map((version) => {
-      return sendVersionNameRequest(version.text).then((result) => ({
-        id: version.id,
-        title: result,
-      }));
-    });
-
-    Promise.all(versionPromises).then((titleResults) => {
-      const titlesObject = {};
-      titleResults.forEach((result) => {
-        titlesObject[result.id] = result.title;
-      });
-      setTitles(titlesObject);
-    });
-  }, []);
   return (
     <div className="overflow-y-scroll">
       {!getVersions().length && (
@@ -62,9 +46,8 @@ const History = ({
           No history yet
         </p>
       )}
-      {getVersions().map((version) => {
+      {getVersions().map((version, index) => {
         const versionId = version.id;
-        const title = titles[versionId] || "";
         return (
           <div
             className={classNames(
@@ -75,7 +58,9 @@ const History = ({
             onClick={() => handleVersionPress(versionId)}
           >
             <div className="pt-3">
-              <p className="mb-3 text-gray-500 dark:text-gray-600">{title}</p>
+              <p className="mb-3 text-gray-500 dark:text-gray-600">
+                {version.id}
+              </p>
               <p className="mb-3 text-gray-500 dark:text-gray-400 truncate overflow-hidden text-ellipsis">
                 {version.description}
               </p>
