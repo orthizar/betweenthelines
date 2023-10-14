@@ -30,9 +30,13 @@ const ButtonGroup = ({
   getPlainText,
   setActiveVersion,
   shouldRefine,
+  workingSource,
+  setWorkingSource,
 }) => {
   const handleButtonGroupSubmit = async (event, improvementType) => {
     event.preventDefault();
+
+    setWorkingSource(improvementType);
 
     const message = (improvementType) => {
       switch (improvementType) {
@@ -49,10 +53,11 @@ const ButtonGroup = ({
         const newText = transformedText.replace(/(?:\r\n|\r|\n|\\n)/g, '\n').trim().replace(/\n/g, '<br>');
         createVersion(transformed.observation, getPlainText(), newText);
         setTextWithHtml(newText);
+        setWorkingSource(null);
         return;
       };
     };
-
+    setWorkingSource(null);
     setActiveVersion(getIndexFromLatestVersion() + 2);
   };
 
@@ -63,9 +68,10 @@ const ButtonGroup = ({
           key={button.id}
           onClick={(event) => handleButtonGroupSubmit(event, button.label)}
           style={{ backgroundColor: button.color }}
-          className={`text-white py-1 px-2 rounded w-28 text-lg ${button.color}`}
+          className={`text-white py-1 px-2 rounded w-28 h-10 text-lg ${button.color}`}
+          disabled={workingSource !== null}
         >
-          {button.label}
+          {workingSource === button.label ? <div className="inline-block h-7 w-7 animate-spin motion-reduce:animate-[spin_1.5s_linear_infinite] rounded-full border-4 border-solid border-current border-r-transparent align-[-0.25em] text-white"/> : button.label}
         </button>
       ))}
     </div>

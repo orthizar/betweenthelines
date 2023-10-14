@@ -10,7 +10,7 @@ const setSessionData = (name, value) => {
   }
 };
 
-const Chat = ({ getPlainText, setTextWithHtml, state, shouldRefine }) => {
+const Chat = ({ getPlainText, setTextWithHtml, state, shouldRefine, workingSource, setWorkingSource }) => {
   const chatContainerRef = useRef(null);
   const [chatMessages, setChatMessages] = useState(state);
   const [chatInputDisabled, setChatInputDisabled] = useState(false);
@@ -36,6 +36,7 @@ const Chat = ({ getPlainText, setTextWithHtml, state, shouldRefine }) => {
 
   const sendMessage = async () => {
     if (message.trim() !== "") {
+			setWorkingSource("chat");
       updateChatMessages([
         ...chatMessages,
         {
@@ -67,10 +68,12 @@ const Chat = ({ getPlainText, setTextWithHtml, state, shouldRefine }) => {
           const value = transformedText.replace(/(?:\r\n|\r|\n|\\n)/g, '\n').trim().replace(/\n/g, '<br>');
           setTextWithHtml(value);
           setChatInputDisabled(false);
+					setWorkingSource(null);
           return;
         }
       };
       setChatInputDisabled(false);
+			setWorkingSource(null);
     };
   };
 
@@ -133,9 +136,10 @@ const Chat = ({ getPlainText, setTextWithHtml, state, shouldRefine }) => {
         ></textarea>
         <button
           onClick={sendMessage}
-          className="w-full bg-blue-500 text-white p-2 rounded"
+          className="w-full bg-blue-500 h-10 text-white rounded"
+					disabled={workingSource !== null}
         >
-          Send
+          {workingSource === "chat" ? <div className="inline-block h-7 w-7 animate-spin motion-reduce:animate-[spin_1.5s_linear_infinite] rounded-full border-4 border-solid border-current border-r-transparent align-[-0.25em] text-white"/> : <p className="m-2">Send</p>}
         </button>
       </div>
     </div>
