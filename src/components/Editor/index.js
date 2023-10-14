@@ -14,6 +14,23 @@ const dic = await fetch(`dictionaries/${lang}/${lang}.dic`).then((r) =>
 );
 const spell = nspell({ aff: aff, dic: dic });
 
+const setSessionData = (name, value) => {
+  try {
+    sessionStorage.setItem(name, value);
+  } catch (e) {
+    console.error("Failed to save session data:", e);
+  }
+};
+
+const getSessionData = (name) => {
+  try {
+    return sessionStorage.getItem(name);
+  } catch (e) {
+    console.error("Failed to retrieve session data:", e);
+    return null;
+  }
+};
+
 var defaultBindings = null;
 
 const Editor = ({ isDesktop, editorRef, formattedValue, setFormattedValue, workingSource }) => {
@@ -230,6 +247,7 @@ const Editor = ({ isDesktop, editorRef, formattedValue, setFormattedValue, worki
       setSpellCheckMistakes(mistakes);
       highlightMistakes(mistakes);
       deselectMistake();
+      setSessionData("editorText", editorRef.current.editor.getText());
     }
   };
 
@@ -279,6 +297,7 @@ const Editor = ({ isDesktop, editorRef, formattedValue, setFormattedValue, worki
   if (editorRef.current != null) {
     if (defaultBindings == null) {
       defaultBindings = editorRef.current.editor.keyboard.bindings;
+      setFormattedValue(getSessionData("editorText").replace(/\n/g, '<br>') || "");
     } else {
       editorRef.current.editor.keyboard.bindings = defaultBindings;
       editorRef.current.editor.keyboard.bindings[9].unshift({
@@ -308,7 +327,7 @@ const Editor = ({ isDesktop, editorRef, formattedValue, setFormattedValue, worki
             >
               {correction}
             </button>
-          ))} 
+          ))}
         </div>
       )}
       <div className="mb-6 h-full w-full overflow-auto">
