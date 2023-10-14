@@ -30,7 +30,7 @@ const History = ({
       editorIsNotEmpty &&
       saveVersion(versionId, currentTextInEditor);
 
-    setTextWithHtml(pressedVersionText);
+    setTextWithHtml(pressedVersionText.replace(/\n/g, '<br>'));
     setActiveVersion(versionId);
   };
 
