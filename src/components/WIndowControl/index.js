@@ -19,7 +19,9 @@ const WindowControl = ({
   setTextWithHtml,
   activeVersion,
   setActiveVersion,
-  shouldRefine
+  shouldRefine,
+  workingSource,
+  setWorkingSource,
 }) => {
   const [activeMenuItem, setActiveMenuItem] = useState("chat");
   const cookieValue = getSessionData("chatMessages");
@@ -41,6 +43,8 @@ const WindowControl = ({
         setTextWithHtml={setTextWithHtml}
         state={initialChatMessages}
         shouldRefine={shouldRefine}
+        workingSource={workingSource}
+        setWorkingSource={setWorkingSource}
       />
     )) ||
     (activeMenuItem === HISTORY_LABEL && (
