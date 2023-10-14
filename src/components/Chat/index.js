@@ -15,6 +15,7 @@ var isGeneratingSuggestion = false;
 
 const Chat = ({ getPlainText, setTextWithHtml, state, shouldRefine, workingSource, setWorkingSource }) => {
 	const chatContainerRef = useRef(null);
+	const chatInputRef = useRef(null);
 	const [chatMessages, setChatMessages] = useState(state);
 	const [chatInputDisabled, setChatInputDisabled] = useState(false);
 	const [message, setMessage] = useState("");
@@ -90,6 +91,7 @@ const Chat = ({ getPlainText, setTextWithHtml, state, shouldRefine, workingSourc
 			sendMessage();
 		}
 	};
+
 	if (suggestion === null && !isGeneratingSuggestion) {
 		isGeneratingSuggestion = true;
 		setTimeout(async () => {
@@ -145,15 +147,17 @@ const Chat = ({ getPlainText, setTextWithHtml, state, shouldRefine, workingSourc
 
 			<div>
 				<button
-					className="text-xs w-full p-1 border rounded-md text-left text-gray mb-2 flex"
+					className="text-xs w-full p-1 border rounded-md text-left text-gray mb-2 flex items-center"
 					onClick={() => {
 						setMessage(suggestion);
 						setSuggestion(null);
+						setTimeout(() => chatInputRef.current.focus(), 0);
 					}}
 					disabled={chatInputDisabled || suggestion === null}>
 					<BsStars /> {suggestion !== null ? suggestion : "Please wait..."}
 				</button>
 				<textarea
+					ref={chatInputRef}
 					onChange={(event) => setMessage(event.target.value)} onKeyDown={(event) => setTimeout(() => handleKeyDown(event), 0)}
 					placeholder={chatInputDisabled ? "Please wait..." : "Type your message here..."}
 					disabled={chatInputDisabled}
