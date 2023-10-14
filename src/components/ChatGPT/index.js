@@ -19,8 +19,18 @@ function useWindowSize() {
   return size;
 }
 
+const getSessionData = (name) => {
+  try {
+    return sessionStorage.getItem(name);
+  } catch (e) {
+    console.error("Failed to retrieve session data:", e);
+    return null;
+  }
+};
+
+
 const ChatGPT = () => {
-  const [textWithHTML, setTextWithHtml] = useState();
+  const [textWithHTML, setTextWithHtml] = useState((getSessionData("editorText") || "").replace(/<br>/g, "\n"));
   const [activeVersion, setActiveVersion] = useState();
   const [activeTab, setActiveTab] = useState("editor");
   const [shouldRefine, setShouldRefine] = useState(false);
