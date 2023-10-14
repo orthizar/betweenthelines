@@ -111,7 +111,6 @@ const transformText = async (text, transformationCommand, format) => {
         output: parsedOutput[2].trim(),
         observation: parsedOutput[3].trim(),
     };
-    console.debug(transformed);
     return transformed;
 };
 

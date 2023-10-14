@@ -9,10 +9,8 @@ export const suggest = async (text, messages) => {
     for (var retry = 0; retry < maxRetries; retry++) {
         try {
             const response = await invokeLLM(prompt);
-            console.log(response);
             const parsedOutput = response.match(/[\n.]*Command:(.*)/si);
             const command = parsedOutput[1].trim();
-            console.log(command);
             return command;
         } catch (error) {
             console.error(error);
