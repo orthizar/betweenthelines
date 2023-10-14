@@ -11,7 +11,7 @@ const setSessionData = (name, value) => {
 	}
 };
 
-const Chat = ({ getPlainText, setTextWithHtml, state, shouldRefine }) => {
+const Chat = ({ getPlainText, setTextWithHtml, state, shouldRefine, workingSource, setWorkingSource }) => {
 	const chatContainerRef = useRef(null);
 	const [chatMessages, setChatMessages] = useState(state);
 	const [chatInputDisabled, setChatInputDisabled] = useState(false);
@@ -21,6 +21,7 @@ const Chat = ({ getPlainText, setTextWithHtml, state, shouldRefine }) => {
 	useEffect(() => {
 		scrollToBottom();
 	});
+
 
 	const scrollToBottom = () => {
 		if (chatContainerRef.current) {
@@ -47,43 +48,50 @@ const Chat = ({ getPlainText, setTextWithHtml, state, shouldRefine }) => {
 				},
 			]);
 
-			var messages = [...chatMessages, {
-				id: chatMessages.length + 1,
-				author: "User",
-				text: message,
-			}];
-			setMessage("");
-			updateChatMessages(messages);
-			setChatInputDisabled(true);
-			for await (const transformed of invokePipeline(getPlainText(), message, shouldRefine)) {
-				if (transformed.output === undefined) {
-					const chatResponse = transformed;
-					messages = [...messages, {
-						id: messages.length + 1,
-						author: "Bot",
-						text: chatResponse,
-					}];
-					updateChatMessages(messages);
-				} else {
-					const transformedText = transformed.output;
-					const value = transformedText.replace(/(?:\r\n|\r|\n|\\n)/g, '\n').trim().replace(/\n/g, '<br>');
-					setTextWithHtml(value);
-					setChatInputDisabled(false);
-					setSuggestion(null);
-					return;
-				}
-			};
-			setChatInputDisabled(false);
-			setSuggestion(null);
-		};
-	};
+  const sendMessage = async () => {
+    if (message.trim() !== "") {
+			setWorkingSource("chat");
+      updateChatMessages([
+        ...chatMessages,
+        {
+          id: chatMessages.length + 1,
+          author: "User",
+          text: message,
+        },
+      ]);
 
-	const handleKeyDown = (event) => {
-		if (event.key === "Enter" && !event.shiftKey) {
-			event.preventDefault();
-			sendMessage();
-		}
-	};
+      var messages = [...chatMessages, {
+        id: chatMessages.length + 1,
+        author: "User",
+        text: message,
+      }];
+      setMessage("");
+      updateChatMessages(messages);
+      setChatInputDisabled(true);
+      for await (const transformed of invokePipeline(getPlainText(), message, shouldRefine)) {
+        if (transformed.output === undefined) {
+          const chatResponse = transformed;
+          messages = [...messages, {
+            id: messages.length + 1,
+            author: "Bot",
+            text: chatResponse,
+          }];
+          updateChatMessages(messages);
+        } else {
+          const transformedText = transformed.output;
+          const value = transformedText.replace(/(?:\r\n|\r|\n|\\n)/g, '\n').trim().replace(/\n/g, '<br>');
+          setTextWithHtml(value);
+          setChatInputDisabled(false);
+					setWorkingSource(null);
+          setSuggestion(null);
+          return;
+        }
+      };
+      setChatInputDisabled(false);
+			setWorkingSource(null);
+      setSuggestion(null);
+    };
+  };
 
 	if (suggestion === null) {
 		setTimeout(async () => {
@@ -132,7 +140,7 @@ const Chat = ({ getPlainText, setTextWithHtml, state, shouldRefine }) => {
 				</div>
 			</div>
 
-			<div className="">
+			<div>
 				{/* suggestion box */}
 				<button
 					className="text-xs w-full p-1 border rounded-md text-left text-gray mb-2 flex"
@@ -142,23 +150,25 @@ const Chat = ({ getPlainText, setTextWithHtml, state, shouldRefine }) => {
 					}}>
 					<BsStars /> {suggestion !== null ? suggestion : "Please wait..."}
 				</button>
-				<textarea
-					onChange={(event) => setMessage(event.target.value)} onKeyDown={(event) => setTimeout(() => handleKeyDown(event), 0)}
-					placeholder={chatInputDisabled ? "Please wait..." : "Type your message here..."}
-					disabled={chatInputDisabled}
-					value={message}
-					className="w-full p-2 border rounded-md resize-none mb-2"
-					rows="2"
-					maxLength={280}
-				></textarea>
-				<button
-					onClick={sendMessage}
-					className="w-full bg-blue-500 text-white p-2 rounded"
-				>
-					Send
-				</button>
-			</div>
-		</div>
-	);
+        <textarea
+          onChange={(event) => setMessage(event.target.value)} onKeyDown={(event) => setTimeout(() => handleKeyDown(event), 0)}
+          placeholder={chatInputDisabled ? "Please wait..." : "Type your message here..."}
+          disabled={chatInputDisabled}
+          value={message}
+          className="w-full p-2 border rounded-md resize-none mb-2"
+          rows="2"
+          maxLength={280}
+        ></textarea>
+        <button
+          onClick={sendMessage}
+          className="w-full bg-blue-500 h-10 text-white rounded"
+					disabled={workingSource !== null}
+        >
+          {workingSource === "chat" ? <div className="inline-block h-7 w-7 animate-spin motion-reduce:animate-[spin_1.5s_linear_infinite] rounded-full border-4 border-solid border-current border-r-transparent align-[-0.25em] text-white"/> : <p className="m-2">Send</p>}
+        </button>
+      </div>
+    </div>
+  );
 };
+
 export default Chat;

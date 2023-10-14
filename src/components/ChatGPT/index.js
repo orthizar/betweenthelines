@@ -24,6 +24,7 @@ const ChatGPT = () => {
   const [activeVersion, setActiveVersion] = useState();
   const [activeTab, setActiveTab] = useState("editor");
   const [shouldRefine, setShouldRefine] = useState(false);
+  const [workingSource, setWorkingSource] = useState(null);
   const editorRef = React.useRef(null);
   const w = useWindowSize()[0];
   const isDesktop = w >= 768;
@@ -63,6 +64,8 @@ const ChatGPT = () => {
             getPlainText={getPlainText}
             activeVersion={activeVersion}
             shouldRefine={shouldRefine}
+            workingSource={workingSource}
+            setWorkingSource={setWorkingSource}
           />
         ) : null}
         <div
@@ -75,6 +78,7 @@ const ChatGPT = () => {
               setFormattedValue={setTextWithHtml}
               formattedValue={textWithHTML}
               editorRef={editorRef}
+              workingSource={workingSource}
             />
           ) : null}
           <div className="flex justify-between items-center">
@@ -84,6 +88,8 @@ const ChatGPT = () => {
                 setTextWithHtml={setTextWithHtml}
                 getPlainText={getPlainText}
                 shouldRefine={shouldRefine}
+                workingSource={workingSource}
+                setWorkingSource={setWorkingSource}
               />
             ) : null}
             {activeTab === "editor" || isDesktop ? (
