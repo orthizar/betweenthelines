@@ -22,14 +22,6 @@ const setSessionData = (name, value) => {
   }
 };
 
-const getSessionData = (name) => {
-  try {
-    return sessionStorage.getItem(name);
-  } catch (e) {
-    console.error("Failed to retrieve session data:", e);
-    return null;
-  }
-};
 
 var defaultBindings = null;
 
@@ -297,7 +289,6 @@ const Editor = ({ isDesktop, editorRef, formattedValue, setFormattedValue, worki
   if (editorRef.current != null) {
     if (defaultBindings == null) {
       defaultBindings = editorRef.current.editor.keyboard.bindings;
-      setFormattedValue(getSessionData("editorText").replace(/\n/g, '<br>') || "");
     } else {
       editorRef.current.editor.keyboard.bindings = defaultBindings;
       editorRef.current.editor.keyboard.bindings[9].unshift({
