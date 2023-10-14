@@ -8,7 +8,6 @@ import {
 
 import { RiDeleteBin6Line } from "react-icons/ri";
 import classNames from "classnames";
-import { sendVersionNameRequest } from "../Helpers/request";
 
 const commonStyles =
   "w-full h-20 mb-5 w-full h-20 shadow-md p-2 cursor-pointer rounded-lg flex flex-row items-center justify-between p-5";
@@ -28,14 +27,24 @@ const History = ({
     if (activeVersion !== versionId) {
       const currentTextInEditor = getPlainText();
       const editorIsNotEmpty = currentTextInEditor.length > 1;
-      const pressedVersionText = getTextFromVersion(versionId);
 
       !doesTextExist(currentTextInEditor) &&
         editorIsNotEmpty &&
         saveVersion(activeVersion, currentTextInEditor);
 
-      setTextWithHtml(pressedVersionText);
+      if (activeVersion) {
+        const pressedVersionText = getTextFromVersion(versionId);
+        setTextWithHtml(pressedVersionText);
+      }
       setActiveVersion(versionId);
+    }
+  };
+
+  const handleDelete = (versionId) => {
+    deleteVersion(versionId);
+    if (activeVersion === versionId) {
+      setTextWithHtml("");
+      setActiveVersion("");
     }
   };
 
@@ -46,7 +55,7 @@ const History = ({
           No history yet
         </p>
       )}
-      {getVersions().map((version, index) => {
+      {getVersions().map((version) => {
         const versionId = version.id;
         return (
           <div
@@ -65,10 +74,11 @@ const History = ({
                 {version.description}
               </p>
             </div>
+
             <RiDeleteBin6Line
               className="text-red-600 cursor-pointer"
               size={20}
-              onClick={() => deleteVersion(versionId)}
+              onClick={() => handleDelete(versionId)}
             />
           </div>
         );

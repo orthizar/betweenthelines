@@ -1,6 +1,5 @@
-import { createVersion, getIndexFromLatestVersion } from "../Helpers/versions";
-
 import React from "react";
+import { createVersion } from "../Helpers/versions";
 import { sendButtonRequest } from "../Helpers/request";
 
 const buttons = [
