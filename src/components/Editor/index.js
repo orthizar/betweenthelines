@@ -225,7 +225,7 @@ const Editor = ({ isDesktop, editorRef, formattedValue, setFormattedValue, worki
 
   const handleEditorChange = (value, delta, source, editor) => {
     setFormattedValue(value);
-    if (source === "user" && isDesktop) {
+    if ((source === "user" || source === "api") && isDesktop) {
       const mistakes = getMistakes(editor.getText());
       setSpellCheckMistakes(mistakes);
       highlightMistakes(mistakes);
