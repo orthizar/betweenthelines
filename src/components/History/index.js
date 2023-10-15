@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
+  deleteAllVersions,
   deleteVersion,
   getTextFromVersion,
   getVersions,
@@ -48,8 +49,14 @@ const History = ({
     }
   };
 
+  const handleDeleteAll = () => {
+    deleteAllVersions();
+    setTextWithHtml("");
+    setActiveVersion("");
+  };
+
   return (
-    <div className="overflow-y-scroll">
+    <div className="overflow-y-scroll flex items-center flex-col justify-between h-full">
       {!getVersions().length && (
         <p className="mb-3 text-gray-500 dark:text-gray-400 m-full text-center">
           No history yet
@@ -74,7 +81,6 @@ const History = ({
                 {version.description}
               </p>
             </div>
-
             <RiDeleteBin6Line
               className="text-red-600 cursor-pointer"
               size={20}
@@ -83,6 +89,12 @@ const History = ({
           </div>
         );
       })}
+      <button
+        className="bg-red-500 hover:bg-red-700 w-full text-white p-2 rounded"
+        onClick={handleDeleteAll}
+      >
+        Delete all versions
+      </button>
     </div>
   );
 };

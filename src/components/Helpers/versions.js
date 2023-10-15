@@ -66,3 +66,7 @@ export const saveVersion = (versionId, newText) => {
     window.sessionStorage.setItem("versions", JSON.stringify(versions));
   }
 };
+
+export const deleteAllVersions = () => {
+  window.sessionStorage.setItem("versions", JSON.stringify([]));
+};
