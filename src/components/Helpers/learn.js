@@ -1,20 +1,22 @@
-import { invokeLLM } from "./request";
-
-import { suggestPrompt } from "./prompts";
-
-const maxRetries = 3;
+import axios from "axios";
 
 export const suggest = async (text, messages) => {
-    const prompt = suggestPrompt(text, messages);
-    for (var retry = 0; retry < maxRetries; retry++) {
-        try {
-            const response = await invokeLLM(prompt);
-            const parsedOutput = response.match(/[\n.]*Command:(.*)/si);
-            const command = parsedOutput[1].trim();
-            return command;
-        } catch (error) {
-            console.error(error);
-        }
-    }
     return null;
+    const response = await axios.post(
+        "http://localhost:3000/api/learn",
+        {
+            text: text,
+            messages: messages,
+        },
+        {
+            headers: {
+                "Content-Type": "application/json",
+            },
+        }
+    );
+    if (response.status !== 200) {
+        return null;
+    }
+    const command = response.data.command;
+    return command;
 };

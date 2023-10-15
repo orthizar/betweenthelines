@@ -2,7 +2,7 @@ import axios from "axios";
 
 export const invokeLLM = async (prompt, tokens) => {
   const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
-  const apiUrl = "https://api.openai.com/v1/completions";
+  const apiUrl = "http://localhost:3000/api/learn";
 
   try {
     const response = await axios.post(
@@ -19,8 +19,7 @@ export const invokeLLM = async (prompt, tokens) => {
         },
       }
     );
-
-    const gptResponse = response.data.choices[0].text;
+    const gptResponse = response.data;
     return gptResponse;
   } catch (error) {
     console.error("OpenAI Error:", error);
