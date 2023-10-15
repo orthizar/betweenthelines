@@ -1,21 +1,25 @@
 import React, { useState } from "react";
+import { RiDeleteBin6Line, RiMagicFill, RiMagicLine } from "react-icons/ri";
 
 import { BsCheckLg } from "react-icons/bs";
 import { GoCopy } from "react-icons/go";
-import { RiDeleteBin6Line, RiMagicFill, RiMagicLine } from "react-icons/ri";
 
-const Utilities = ({ editorRef, setTextWithHtml, shouldRefine, setShouldRefine }) => {
+const Utilities = ({
+  getPlainText,
+  setTextWithHtml,
+  shouldRefine,
+  setShouldRefine,
+}) => {
   const [isCopied, setIsCopied] = useState(false);
 
   const handleCopy = (event) => {
     event.preventDefault();
-    navigator.clipboard.writeText(editorRef.current.editor.getText).then(() => {
+    navigator.clipboard.writeText(getPlainText()).then(() => {
       setIsCopied(true);
     });
   };
 
   return (
-
     <div className="space-x-4 flex items-center">
       {shouldRefine ? (
         <RiMagicFill
@@ -39,7 +43,7 @@ const Utilities = ({ editorRef, setTextWithHtml, shouldRefine, setShouldRefine }
           className="cursor-pointer"
           color="#4285F4"
           size={28}
-          onClick={() => handleCopy()}
+          onClick={(event) => handleCopy(event)}
         />
       )}
       <RiDeleteBin6Line

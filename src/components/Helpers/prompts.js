@@ -1,5 +1,5 @@
 const formatInstrucions = {
-    email: `
+  email: `
 The text must be in the format of an email.
 Parts of an email body:
 - Opening
@@ -9,7 +9,7 @@ Parts of an email body:
 };
 
 export const transformTextPrompt = (text, transformationCommand, format) => {
-    return `
+  return `
 Execute the following transformation commands for me.
 Use the following format:
 
@@ -27,7 +27,7 @@ Transformation: ${transformationCommand}`.trim();
 };
 
 export const generateQuestionsPrompt = (text) => {
-    return `
+  return `
 Generate questions about the following text.
 Use the following format:
 
@@ -41,8 +41,8 @@ Text: ${text}`.trim();
 };
 
 export const answerQuestionsPrompt = (text, questions) => {
-    const formattedQuestions = "[" + questions.join(",") + "]";
-    return `
+  const formattedQuestions = "[" + questions.join(",") + "]";
+  return `
 Answer the following questions.
 Use the following format:
 
@@ -59,19 +59,21 @@ Questions: ${formattedQuestions}`.trim();
 };
 
 export const validateAnswersPrompt = (text, questions, answers) => {
-    var formattedQuestions = "[";
-    var formattedAnswers = "[";
-    questions.forEach((question, index) => {
-        formattedQuestions += question;
-        formattedAnswers += answers.find((answer) => answer.question === question).answer;
-        if (index < questions.length - 1) {
-            formattedQuestions += ",";
-            formattedAnswers += ",";
-        }
-    });
-    formattedQuestions += "]";
-    formattedAnswers += "]";
-    return `
+  var formattedQuestions = "[";
+  var formattedAnswers = "[";
+  questions.forEach((question, index) => {
+    formattedQuestions += question;
+    formattedAnswers += answers.find(
+      (answer) => answer.question === question
+    ).answer;
+    if (index < questions.length - 1) {
+      formattedQuestions += ",";
+      formattedAnswers += ",";
+    }
+  });
+  formattedQuestions += "]";
+  formattedAnswers += "]";
+  return `
 Verify the following answers.
 Do not stop until all answers are verified.
 Use the following format:
@@ -91,9 +93,15 @@ Questions: ${formattedQuestions}
 Answers: ${formattedAnswers}`.trim();
 };
 
-export const enrichTextPrompt = (text, transformedText, questions, transformationCommand, format) => {
-    const formattedQuestions = "[" + questions.join(",") + "]";
-    return `
+export const enrichTextPrompt = (
+  text,
+  transformedText,
+  questions,
+  transformationCommand,
+  format
+) => {
+  const formattedQuestions = "[" + questions.join(",") + "]";
+  return `
 The text was transformed but is missing some information.
 Include the information in the output but make sure to be in line with the transformation command.
 Use the following format:
@@ -117,8 +125,13 @@ Information: ${formattedQuestions}`.trim();
 };
 
 export const suggestPrompt = (text, messages) => {
-    const formattedMessages = messages.length > 0? messages.length === 1 ? messages[0] : "[" + messages.join(",") + "]" : "No previous commands.";
-    return `
+  const formattedMessages =
+    messages.length > 0
+      ? messages.length === 1
+        ? messages[0]
+        : "[" + messages.join(",") + "]"
+      : "No previous commands.";
+  return `
 Suggest ways to improve the text. Formulate the suggestion as a command.
 Do not repeat previous commands, when not necessary.
 Only suggest commands that are relevant for the text and can be applied to the text via GPT-3.5.
