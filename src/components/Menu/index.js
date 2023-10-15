@@ -16,7 +16,6 @@ const Menu = ({ activeMenuItem, setActiveMenuItem }) => {
   const getCorrectPStyle = (label) =>
     activeMenuItem === label ? activePStyle : inactivePStyle;
 
-
   return (
     <div className="text-sm font-medium text-center text-gray-500 border-b w-full">
       <ul className="flex -mb-px justify-around">

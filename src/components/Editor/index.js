@@ -22,10 +22,15 @@ const setSessionData = (name, value) => {
   }
 };
 
-
 var defaultBindings = null;
 
-const Editor = ({ isDesktop, editorRef, formattedValue, setFormattedValue, workingSource }) => {
+const Editor = ({
+  isDesktop,
+  editorRef,
+  formattedValue,
+  setFormattedValue,
+  workingSource,
+}) => {
   const [spellCheckMistakes, setSpellCheckMistakes] = useState([]);
   const [currentMistake, setCurrentMistake] = useState(null);
   const [editorCorrections, setEditorCorrections] = useState([]);
@@ -259,9 +264,9 @@ const Editor = ({ isDesktop, editorRef, formattedValue, setFormattedValue, worki
       navigateCorrections();
       previewCorrection(
         editorCorrections[
-        selectedCorrection == null
-          ? 0
-          : (selectedCorrection + 1) % editorCorrections.length
+          selectedCorrection == null
+            ? 0
+            : (selectedCorrection + 1) % editorCorrections.length
         ]
       );
     }
@@ -307,18 +312,20 @@ const Editor = ({ isDesktop, editorRef, formattedValue, setFormattedValue, worki
     <>
       {isDesktop && (
         <div className={`mb-2 p-2 border rounded-md h-14`}>
-          {workingSource === null && editorCorrections.map((correction, index) => (
-            <button
-              key={correction}
-              onClick={(event) => handleCorrectionClick(event, correction)}
-              onMouseEnter={() => previewCorrection(correction)}
-              onMouseLeave={() => unpreviewCorrection(correction)}
-              className={`text-black rounded text-sm w-1/5 ${selectedCorrection === index ? "bg-gray-200" : "bg-white"
+          {workingSource === null &&
+            editorCorrections.map((correction, index) => (
+              <button
+                key={correction}
+                onClick={(event) => handleCorrectionClick(event, correction)}
+                onMouseEnter={() => previewCorrection(correction)}
+                onMouseLeave={() => unpreviewCorrection(correction)}
+                className={`text-black rounded text-sm w-1/5 ${
+                  selectedCorrection === index ? "bg-gray-200" : "bg-white"
                 }`}
-            >
-              {correction}
-            </button>
-          ))}
+              >
+                {correction}
+              </button>
+            ))}
         </div>
       )}
       <div className="mb-6 h-full w-full overflow-auto">
