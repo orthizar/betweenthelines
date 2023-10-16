@@ -151,7 +151,7 @@ export const suggestPrompt = (text, messages, format) => {
   return `
 Suggest ways to improve the text. Formulate the suggestion as a command.
 Do not repeat previous commands, when not necessary.
-Only suggest commands that are relevant for the text and can be applied to the text via GPT-3.5.
+Only suggest commands that are relevant for the text and can be applied to the text.
 If text is empty, suggest a command to generate a ${format} template.
 Use the following format:
 
