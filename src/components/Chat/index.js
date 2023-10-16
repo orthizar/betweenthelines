@@ -161,10 +161,7 @@ const Chat = ({
 
   return (
     <div className="flex flex-col h-full">
-      <div
-        className="flex-grow overflow-y-auto"
-        ref={chatContainerRef}
-      >
+      <div className="flex-grow overflow-y-auto" ref={chatContainerRef}>
         <div className="mb-6 overflow-y-auto px-4">
           {chatMessages.map((chatMessage) => (
             <div
@@ -194,8 +191,7 @@ const Chat = ({
           ))}
         </div>
       </div>
-
-      <div className="flex-grow">
+      <div className="flex-grow mb-12">
         <button
           className="text-xs w-full p-1 border rounded-md text-left text-gray mb-2 flex items-center"
           onClick={() => {
@@ -220,9 +216,7 @@ const Chat = ({
           rows="2"
           maxLength={280}
         ></textarea>
-        <div
-          className="flex justify-between mb-2 gap-1"
-        >
+        <div className="flex justify-between mb-2 gap-1">
           <input
             type="file"
             id="image-input"
@@ -259,7 +253,6 @@ const Chat = ({
             )}
           </button>
         </div>
-
       </div>
     </div>
   );
