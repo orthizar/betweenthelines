@@ -1,4 +1,3 @@
-import React, { useEffect, useState } from "react";
 import {
   deleteAllVersions,
   deleteVersion,
@@ -7,6 +6,7 @@ import {
   saveVersion,
 } from "../Helpers/versions";
 
+import React from "react";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import classNames from "classnames";
 

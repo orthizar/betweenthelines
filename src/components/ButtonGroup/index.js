@@ -1,7 +1,6 @@
 import React from "react";
 import { createVersion } from "../Helpers/versions";
 import { invokePipeline } from "../Helpers/refine";
-import { sendButtonRequest } from "../Helpers/request";
 
 const buttons = [
   {
