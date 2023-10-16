@@ -1,3 +1,6 @@
+export const getMaxTokens = (prompt) => {
+  return 4096 - ~~(prompt.length / 3.5);
+};
 const formatInstrucions = {
   email: `
 The text must be in the format of an email.
@@ -8,12 +11,26 @@ Parts of an email body:
 - Signature`.trim(),
 };
 
-export const transformTextPrompt = (text, transformationCommand, format) => {
+export const transformTextPrompt = (text, imageAnnotations, transformationCommand, format) => {
+  const imageInstructions = `
+Image Labels: the labels that describe the image, wrapped in square brackets.
+Image Text: the text that is in the image, wrapped in square brackets.
+Image Logos: the logos that are in the image, wrapped in square brackets.
+Image Web: the web entities that are in the image, wrapped in square brackets.
+Image Objects: the objects that are in the image, wrapped in square brackets.
+`.trim();
+  const formattedImageAnnotations = imageAnnotations ? `
+Image Labels: ${imageAnnotations.labels ? "[" + imageAnnotations.labels.join(",") + "]" : "No labels found."}
+Image Text: ${imageAnnotations.text ? "[" + imageAnnotations.text.join(",") + "]" : "No text found."}
+Image Logos: ${imageAnnotations.logos ? "[" + imageAnnotations.logos.join(",") + "]" : "No logos found."}
+Image Web: ${imageAnnotations.web ? "[" + imageAnnotations.web.join(",") + "]" : "No web entities found."}
+Image Objects: ${imageAnnotations.objects ? "[" + imageAnnotations.objects.join(",") + "]" : "No objects found."}
+`.trim() : "";
   return `
 Execute the following transformation commands for me.
 Use the following format:
 
-Text: the source text you want to transform
+Text: the source text you want to transform ${imageAnnotations ? "\n" + imageInstructions : ""}
 Layout: the layout the text should be in
 Transformation: the transformations you should do to the source text. Do not make any changes that are not asked for.
 Thought: you should always think about what to do
@@ -21,7 +38,7 @@ Output: the transformed text in the correct layout. Do not include part titles (
 Observation: Describe what you did in max 15 words
 
 Begin! Remember to use the correct format.
-Text: ${text}
+Text: ${text} ${imageAnnotations ? "\n" + formattedImageAnnotations : ""}
 Layout: ${formatInstrucions[format]}
 Transformation: ${transformationCommand}`.trim();
 };

@@ -1,9 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
 
+import { BiImageAdd } from "react-icons/bi";
 import { BsStars } from "react-icons/bs";
+import { annotateImage } from "../Helpers/image";
 import { createVersion } from "../Helpers/versions";
 import { invokePipeline } from "../Helpers/refine";
 import { suggest } from "../Helpers/learn";
+import { useCallback } from "react";
 
 const setSessionData = (name, value) => {
   try {
@@ -12,8 +15,6 @@ const setSessionData = (name, value) => {
     console.error("Failed to save session data:", e);
   }
 };
-
-var isGeneratingSuggestion = false;
 
 const Chat = ({
   getPlainText,
@@ -27,6 +28,8 @@ const Chat = ({
   const chatContainerRef = useRef(null);
   const chatInputRef = useRef(null);
   const [chatMessages, setChatMessages] = useState(state);
+  const [image, setImage] = useState(null);
+  const [imageAnnotations, setImageAnnotations] = useState(null);
   const [chatInputDisabled, setChatInputDisabled] = useState(false);
   const [message, setMessage] = useState("");
   const [suggestion, setSuggestion] = useState(null);
@@ -52,28 +55,40 @@ const Chat = ({
   const sendMessage = async () => {
     if (message.trim() !== "") {
       setWorkingSource("chat");
-      updateChatMessages([
-        ...chatMessages,
-        {
-          id: chatMessages.length + 1,
-          author: "User",
-          text: message,
-        },
-      ]);
+      var messages;
+      if (image !== null) {
+        messages = [
+          ...chatMessages,
+          {
+            id: chatMessages.length + 1,
+            author: "User",
+            image: image,
+          },
+          {
+            id: chatMessages.length + 2,
+            author: "User",
+            text: message,
+          },
+        ];
+      } else {
+        messages = [
+          ...chatMessages,
+          {
+            id: chatMessages.length + 1,
+            author: "User",
+            text: message,
+          },
+        ];
+      }
 
-      var messages = [
-        ...chatMessages,
-        {
-          id: chatMessages.length + 1,
-          author: "User",
-          text: message,
-        },
-      ];
       setMessage("");
+      setImage(null);
+      setImageAnnotations(null);
       updateChatMessages(messages);
       setChatInputDisabled(true);
       for await (const transformed of invokePipeline(
         getPlainText(),
+        imageAnnotations,
         message,
         shouldRefine
       )) {
@@ -113,6 +128,20 @@ const Chat = ({
     }
   };
 
+  const handleImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        setImage(reader.result);
+
+        const annotations = await annotateImage(reader.result);
+        setImageAnnotations(annotations);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleKeyDown = (event) => {
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
@@ -120,27 +149,25 @@ const Chat = ({
     }
   };
 
-  if (suggestion === null && !isGeneratingSuggestion) {
-    isGeneratingSuggestion = true;
-    setTimeout(async () => {
+  const getPlainTextCallback = useCallback(() => {
+    return getPlainText();
+  }, [getPlainText]);
+
+  useEffect(() => {
+    if (suggestion === null) {
       const messages = chatMessages
         .filter((message) => isMyMessage(message.author))
         .map((message) => message.text);
       console.log("suggest");
-      suggest(getPlainText(), messages).then((suggestion) => {
+      suggest(getPlainTextCallback(), messages).then((suggestion) => {
         setSuggestion(suggestion);
       });
-    }, 0);
-  } else if (isGeneratingSuggestion) {
-    isGeneratingSuggestion = false;
-  }
+    }
+  }, [chatMessages, suggestion, getPlainTextCallback]);
 
   return (
     <div className="flex flex-col h-full">
-      <div
-        className="flex-grow overflow-y-auto max-h-[22rem]"
-        ref={chatContainerRef}
-      >
+      <div className="flex-grow overflow-y-auto" ref={chatContainerRef}>
         <div className="mb-6 overflow-y-auto px-4">
           {chatMessages.map((chatMessage) => (
             <div
@@ -170,7 +197,14 @@ const Chat = ({
                       : "bg-gray-200 ml-1"
                   }`}
                 >
-                  <p className={"text-left"}>{chatMessage.text}</p>
+                  {chatMessage.text && <p>{chatMessage.text}</p>}
+                  {chatMessage.image && (
+                    <img
+                      src={chatMessage.image}
+                      alt="Uploaded content"
+                      className="max-w-full max-h-40"
+                    />
+                  )}
                 </div>
               </div>
             </div>
@@ -178,7 +212,7 @@ const Chat = ({
         </div>
       </div>
 
-      <div>
+      <div className="flex-grow">
         <button
           className="text-xs w-full p-1 border rounded-md text-left text-gray mb-2 flex items-center"
           onClick={() => {
@@ -203,17 +237,39 @@ const Chat = ({
           rows="2"
           maxLength={280}
         ></textarea>
-        <button
-          onClick={sendMessage}
-          className="w-full bg-blue-500 h-10 text-white rounded"
-          disabled={workingSource !== null}
-        >
-          {workingSource === "chat" ? (
-            <div className="inline-block h-7 w-7 animate-spin motion-reduce:animate-[spin_1.5s_linear_infinite] rounded-full border-4 border-solid border-current border-r-transparent align-[-0.25em] text-white" />
-          ) : (
-            <p className="m-2">Send</p>
-          )}
-        </button>
+        <div className="flex justify-between mb-2 gap-1">
+          <input
+            type="file"
+            id="image-input"
+            onChange={handleImageChange}
+            accept="image/*"
+            className="mb-2 hidden"
+          ></input>
+          <label htmlFor="image-input">
+            <div className="bg-blue-500 h-10 w-10 p-1 text-white rounded flex items-center justify-center cursor-pointer">
+              {image ? (
+                <img
+                  src={image}
+                  alt="Uploaded content"
+                  className="max-w-full max-h-full"
+                />
+              ) : (
+                <BiImageAdd className="text-lg text-white cursor-pointer" />
+              )}
+            </div>
+          </label>
+          <button
+            onClick={sendMessage}
+            className="w-full bg-blue-500 h-10 text-white rounded"
+            disabled={workingSource !== null}
+          >
+            {workingSource === "chat" ? (
+              <div className="inline-block h-7 w-7 animate-spin motion-reduce:animate-[spin_1.5s_linear_infinite] rounded-full border-4 border-solid border-current border-r-transparent align-[-0.25em] text-white" />
+            ) : (
+              <p className="m-2">Send</p>
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );
