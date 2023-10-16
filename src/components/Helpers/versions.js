@@ -19,6 +19,7 @@ export const getIndexFromLatestVersion = () => getVersions().length - 1;
 export const createVersion = (description, textInEditor, newText) => {
   const versions = getVersions();
   const isVersion0 = versions.length < 1;
+  const newActiveVersion = versions.length + 1;
 
   if (textInEditor.length > 1) {
     if (isVersion0) {
@@ -31,7 +32,7 @@ export const createVersion = (description, textInEditor, newText) => {
     }
 
     const newVersion = {
-      id: versions.length + 1,
+      id: newActiveVersion,
       description: description,
       text: newText ? newText : textInEditor,
     };
@@ -39,6 +40,7 @@ export const createVersion = (description, textInEditor, newText) => {
     versions.push(newVersion);
 
     window.sessionStorage.setItem("versions", JSON.stringify(versions));
+    return newActiveVersion;
   }
 };
 

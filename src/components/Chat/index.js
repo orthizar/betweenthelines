@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 
 import { BsStars } from "react-icons/bs";
+import { createVersion } from "../Helpers/versions";
 import { invokePipeline } from "../Helpers/refine";
 import { suggest } from "../Helpers/learn";
 
@@ -21,6 +22,7 @@ const Chat = ({
   shouldRefine,
   workingSource,
   setWorkingSource,
+  setActiveVersion,
 }) => {
   const chatContainerRef = useRef(null);
   const chatInputRef = useRef(null);
@@ -93,6 +95,12 @@ const Chat = ({
             .trim()
             .replace(/\n/g, "<br>");
           setTextWithHtml(value);
+          const newActiveVersion = createVersion(
+            message,
+            getPlainText(),
+            value
+          );
+          setActiveVersion(newActiveVersion);
           setChatInputDisabled(false);
           setWorkingSource(null);
           setSuggestion(null);

@@ -59,7 +59,14 @@ const ButtonGroup = ({
           .replace(/(?:\r\n|\r|\n|\\n)/g, "\n")
           .trim()
           .replace(/\n/g, "<br>");
-        createVersion(transformed.observation, getPlainText(), newText);
+
+        const newVersion = createVersion(
+          transformed.observation,
+          getPlainText(),
+          newText
+        );
+
+        setActiveVersion(newVersion);
         setTextWithHtml(newText);
         setWorkingSource(null);
         return;
