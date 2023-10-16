@@ -1,4 +1,5 @@
 import {
+  getMaxTokens,
   answerQuestionsPrompt,
   enrichTextPrompt,
   generateQuestionsPrompt,
@@ -160,10 +161,6 @@ export async function* invokePipeline(text, imageDescription, transformationComm
     });
   }
 }
-
-const getMaxTokens = (prompt) => {
-  return 4096 - ~~(prompt.length / 3.5);
-};
 
 const transformText = async (text, imageAnnotations, transformationCommand, format) => {
   const prompt = transformTextPrompt(text, imageAnnotations, transformationCommand, format);
