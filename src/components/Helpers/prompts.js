@@ -153,7 +153,7 @@ Use the following format:
 
 Text: the source text you want to predict the next command for.
 Commands: the previous commands that were applied to the text, wrapped in square brackets.
-Command: the predicted command.
+Command: the suggested command.
 
 Begin! Remember to use the correct format.
 Text: ${text}
