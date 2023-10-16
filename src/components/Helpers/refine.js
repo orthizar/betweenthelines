@@ -24,6 +24,9 @@ export async function* invokePipeline(text, imageDescription, transformationComm
       try {
         const format = "email";
         if (step === 0) {
+          yield await Promise.resolve(
+            "Transforming text per your request."
+          );
           transformed = await transformText(
             text,
             imageDescription,
