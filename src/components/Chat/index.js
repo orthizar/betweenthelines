@@ -4,6 +4,7 @@ import { BsStars } from "react-icons/bs";
 import { BiImageAdd } from "react-icons/bi";
 import { invokePipeline } from "../Helpers/refine";
 import { suggest } from "../Helpers/learn";
+import { useCallback } from "react";
 
 const setSessionData = (name, value) => {
   try {
@@ -13,7 +14,6 @@ const setSessionData = (name, value) => {
   }
 };
 
-var isGeneratingSuggestion = false;
 
 const Chat = ({
   getPlainText,
@@ -143,20 +143,21 @@ const Chat = ({
     }
   };
 
-  if (suggestion === null && !isGeneratingSuggestion) {
-    isGeneratingSuggestion = true;
-    setTimeout(async () => {
+  const getPlainTextCallback = useCallback(() => {
+    return getPlainText();
+  }, [getPlainText]);
+
+  useEffect(() => {
+    if (suggestion === null) {
       const messages = chatMessages
         .filter((message) => isMyMessage(message.author))
         .map((message) => message.text);
       console.log("suggest");
-      suggest(getPlainText(), messages).then((suggestion) => {
+      suggest(getPlainTextCallback(), messages).then((suggestion) => {
         setSuggestion(suggestion);
       });
-    }, 0);
-  } else if (isGeneratingSuggestion) {
-    isGeneratingSuggestion = false;
-  }
+    }
+  }, [chatMessages, suggestion, getPlainTextCallback]);
 
   return (
     <div className="flex flex-col h-full">
