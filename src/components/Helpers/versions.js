@@ -19,7 +19,6 @@ export const getIndexFromLatestVersion = () => getVersions().length - 1;
 export const createVersion = (description, textInEditor, newText) => {
   const versions = getVersions();
   const isVersion0 = versions.length < 1;
-  const newActiveVersion = versions.length + 1;
 
   if (textInEditor.length > 1) {
     if (isVersion0) {
@@ -30,6 +29,8 @@ export const createVersion = (description, textInEditor, newText) => {
       };
       versions.push(baseVersion);
     }
+
+    const newActiveVersion = versions.length + 1;
 
     const newVersion = {
       id: newActiveVersion,
