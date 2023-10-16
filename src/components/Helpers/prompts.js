@@ -8,12 +8,13 @@ Parts of an email body:
 - Signature`.trim(),
 };
 
-export const transformTextPrompt = (text, transformationCommand, format) => {
+export const transformTextPrompt = (text, imageDescription, transformationCommand, format) => {
+  const formattedImageDescription = imageDescription ? "[" + imageDescription.join(",") + "]" : null;
   return `
 Execute the following transformation commands for me.
 Use the following format:
 
-Text: the source text you want to transform
+Text: the source text you want to transform ${imageDescription ? "\nImage Tags: the tags that describe the image, wrapped in square brackets" : ""}
 Layout: the layout the text should be in
 Transformation: the transformations you should do to the source text. Do not make any changes that are not asked for.
 Thought: you should always think about what to do
@@ -21,7 +22,7 @@ Output: the transformed text in the correct layout. Do not include part titles (
 Observation: Describe what you did in max 15 words
 
 Begin! Remember to use the correct format.
-Text: ${text}
+Text: ${text} ${imageDescription ? "\nImage Tags: " + formattedImageDescription : ""}
 Layout: ${formatInstrucions[format]}
 Transformation: ${transformationCommand}`.trim();
 };

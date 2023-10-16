@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { annotateImage } from "../Helpers/image";
 import { BsStars } from "react-icons/bs";
+import { BiImageAdd } from "react-icons/bi";
 import { invokePipeline } from "../Helpers/refine";
 import { suggest } from "../Helpers/learn";
 
@@ -26,6 +27,7 @@ const Chat = ({
   const chatInputRef = useRef(null);
   const [chatMessages, setChatMessages] = useState(state);
   const [image, setImage] = useState(null);
+  const [imageDescription, setImageDescription] = useState(null);
   const [chatInputDisabled, setChatInputDisabled] = useState(false);
   const [message, setMessage] = useState("");
   const [suggestion, setSuggestion] = useState(null);
@@ -51,28 +53,26 @@ const Chat = ({
   const sendMessage = async () => {
     if (message.trim() !== "") {
       setWorkingSource("chat");
-      updateChatMessages([
-        ...chatMessages,
-        {
+      var messages = [
+        ...chatMessages, {
           id: chatMessages.length + 1,
           author: "User",
-          text: message,
+          image: image,
         },
-      ]);
-
-      var messages = [
-        ...chatMessages,
         {
-          id: chatMessages.length + 1,
+          id: chatMessages.length + 2,
           author: "User",
           text: message,
         },
       ];
       setMessage("");
+      setImage(null);
+      setImageDescription(null);
       updateChatMessages(messages);
       setChatInputDisabled(true);
       for await (const transformed of invokePipeline(
         getPlainText(),
+        imageDescription,
         message,
         shouldRefine
       )) {
@@ -112,25 +112,12 @@ const Chat = ({
       const reader = new FileReader();
       reader.onloadend = async () => {
         setImage(reader.result);
-        sendImageMessage(reader.result);
 
         const descriptions = await annotateImage(reader.result);
-        
-        console.log(descriptions);
-
-
-        // console.log(imageAnalysis);
+        setImageDescription(descriptions);
       };
       reader.readAsDataURL(file);
     }
-  };
-
-  const sendImageMessage = (imageData) => {
-    updateChatMessages([...chatMessages, {
-      id: chatMessages.length + 1,
-      author: "User",
-      image: imageData,
-    }]);
   };
 
   const handleKeyDown = (event) => {
@@ -170,8 +157,8 @@ const Chat = ({
             >
               <div
                 className={`text-xs mb-1 ${isMyMessage(chatMessage.author)
-                    ? "text-gray-600 mr-1"
-                    : "text-gray-600 ml-1"
+                  ? "text-gray-600 mr-1"
+                  : "text-gray-600 ml-1"
                   }`}
               >
                 {!isMyMessage(chatMessage.author) && (
@@ -192,12 +179,6 @@ const Chat = ({
       </div>
 
       <div>
-        <input
-          type="file"
-          onChange={handleImageChange}
-          accept="image/*"
-          className="mb-2"
-        ></input>
         <button
           className="text-xs w-full p-1 border rounded-md text-left text-gray mb-2 flex items-center"
           onClick={() => {
@@ -222,17 +203,46 @@ const Chat = ({
           rows="2"
           maxLength={280}
         ></textarea>
-        <button
-          onClick={sendMessage}
-          className="w-full bg-blue-500 h-10 text-white rounded"
-          disabled={workingSource !== null}
+        <div
+          className="flex justify-between mb-2 gap-1"
         >
-          {workingSource === "chat" ? (
-            <div className="inline-block h-7 w-7 animate-spin motion-reduce:animate-[spin_1.5s_linear_infinite] rounded-full border-4 border-solid border-current border-r-transparent align-[-0.25em] text-white" />
-          ) : (
-            <p className="m-2">Send</p>
-          )}
-        </button>
+          <input
+            type="file"
+            id="image-input"
+            onChange={handleImageChange}
+            accept="image/*"
+            className="mb-2 hidden"
+          ></input>
+          <label htmlFor="image-input">
+            <div
+              className="bg-blue-500 h-10 w-10 p-1 text-white rounded flex items-center justify-center cursor-pointer"
+            >
+              {image ? (
+                <img
+                  src={image}
+                  alt={imageDescription ? imageDescription.join(", ") : ""}
+                  className="max-w-full max-h-full"
+                />
+              ) : (
+                <BiImageAdd
+                  className="text-lg text-white cursor-pointer"
+                />
+              )}
+            </div>
+          </label>
+          <button
+            onClick={sendMessage}
+            className="w-full bg-blue-500 h-10 text-white rounded"
+            disabled={workingSource !== null}
+          >
+            {workingSource === "chat" ? (
+              <div className="inline-block h-7 w-7 animate-spin motion-reduce:animate-[spin_1.5s_linear_infinite] rounded-full border-4 border-solid border-current border-r-transparent align-[-0.25em] text-white" />
+            ) : (
+              <p className="m-2">Send</p>
+            )}
+          </button>
+        </div>
+
       </div>
     </div>
   );

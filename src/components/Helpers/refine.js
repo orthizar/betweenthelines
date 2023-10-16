@@ -10,7 +10,7 @@ import { invokeLLM } from "./request";
 
 const maxRetries = 10;
 
-export async function* invokePipeline(text, transformationCommand, refine) {
+export async function* invokePipeline(text, imageDescription, transformationCommand, refine) {
   try {
     var transformed = undefined;
     var questions = undefined;
@@ -26,6 +26,7 @@ export async function* invokePipeline(text, transformationCommand, refine) {
         if (step === 0) {
           transformed = await transformText(
             text,
+            imageDescription,
             transformationCommand,
             format
           );
@@ -164,8 +165,8 @@ const getMaxTokens = (prompt) => {
   return 4096 - ~~(prompt.length / 3.5);
 };
 
-const transformText = async (text, transformationCommand, format) => {
-  const prompt = transformTextPrompt(text, transformationCommand, format);
+const transformText = async (text, imageDescription, transformationCommand, format) => {
+  const prompt = transformTextPrompt(text, imageDescription, transformationCommand, format);
   const transformedText = await invokeLLM(prompt, getMaxTokens(prompt));
   const parsedOutput = transformedText.match(
     /[\n.]*Thought:\n*(.*)Output:\n*(.*)Observation:\n*(.*)/is
