@@ -19,6 +19,9 @@ const WindowControl = ({
   setTextWithHtml,
   activeVersion,
   setActiveVersion,
+  shouldRefine,
+  workingSource,
+  setWorkingSource,
 }) => {
   const [activeMenuItem, setActiveMenuItem] = useState("chat");
   const cookieValue = getSessionData("chatMessages");
@@ -39,6 +42,9 @@ const WindowControl = ({
         getPlainText={getPlainText}
         setTextWithHtml={setTextWithHtml}
         state={initialChatMessages}
+        shouldRefine={shouldRefine}
+        workingSource={workingSource}
+        setWorkingSource={setWorkingSource}
       />
     )) ||
     (activeMenuItem === HISTORY_LABEL && (
@@ -51,7 +57,7 @@ const WindowControl = ({
     ));
 
   return (
-    <div className="bg-white shadow-xl p-8 rounded-lg w-full sm:w-2/5 flex flex-col sm:mr-6">
+    <div className="bg-white shadow-xl p-8 rounded-lg w-full md:w-[32%] flex flex-none flex-col">
       <div className="flex justify-between items-center mb-4">
         <Menu
           activeMenuItem={activeMenuItem}

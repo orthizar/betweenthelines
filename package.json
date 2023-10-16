@@ -1,5 +1,5 @@
 {
-  "name": "chatgpt-grammer",
+  "name": "betweenthelines",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -21,6 +21,7 @@
     "react-loading-spin": "^2.1.9",
     "react-quill": "^2.0.0",
     "react-scripts": "5.0.1",
+    "tw-elements": "^1.0.0",
     "web-vitals": "^2.1.4"
   },
   "scripts": {

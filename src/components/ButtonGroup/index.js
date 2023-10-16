@@ -1,5 +1,6 @@
 import React from "react";
 import { createVersion } from "../Helpers/versions";
+import { invokePipeline } from "../Helpers/refine";
 import { sendButtonRequest } from "../Helpers/request";
 
 const buttons = [
@@ -27,31 +28,62 @@ const buttons = [
 
 const ButtonGroup = ({
   setTextWithHtml,
-  editorRef,
   getPlainText,
   setActiveVersion,
+  shouldRefine,
+  workingSource,
+  setWorkingSource,
 }) => {
-  const handleButtonGroupSubmit = (event, improvementType) => {
+  const handleButtonGroupSubmit = async (event, improvementType) => {
     event.preventDefault();
 
-    sendButtonRequest(editorRef, improvementType).then((result) => {
-      createVersion(`Button: ${improvementType}`, getPlainText(), result);
-      setTextWithHtml(result);
-    });
+    setWorkingSource(improvementType);
 
-    setActiveVersion();
+    const message = (improvementType) => {
+      switch (improvementType) {
+        case "Improve":
+          return "Improve the text.";
+        default:
+          return "Make the text more " + improvementType.toLowerCase() + ".";
+      }
+    };
+
+    for await (const transformed of invokePipeline(
+      getPlainText(),
+      message(improvementType),
+      shouldRefine
+    )) {
+      if (transformed.output !== undefined) {
+        const transformedText = transformed.output;
+        const newText = transformedText
+          .replace(/(?:\r\n|\r|\n|\\n)/g, "\n")
+          .trim()
+          .replace(/\n/g, "<br>");
+        createVersion(transformed.observation, getPlainText(), newText);
+        setTextWithHtml(newText);
+        setWorkingSource(null);
+        return;
+      }
+    }
+    setWorkingSource(null);
+    // setActiveVersion(getIndexFromLatestVersion() + 2);
   };
 
   return (
-    <div className="space-x-4">
+    <div className="flex flex-wrap gap-4">
       {buttons.map((button) => (
         <button
           key={button.id}
           onClick={(event) => handleButtonGroupSubmit(event, button.label)}
           style={{ backgroundColor: button.color }}
-          className={`text-white py-1 px-2 rounded text-lg ${button.color}`}
+          className={`text-white py-1 px-2 rounded w-28 h-10 text-lg ${button.color}`}
+          disabled={workingSource !== null}
         >
-          {button.label}
+          {workingSource === button.label ? (
+            <div className="inline-block h-7 w-7 animate-spin motion-reduce:animate-[spin_1.5s_linear_infinite] rounded-full border-4 border-solid border-current border-r-transparent align-[-0.25em] text-white" />
+          ) : (
+            button.label
+          )}
         </button>
       ))}
     </div>

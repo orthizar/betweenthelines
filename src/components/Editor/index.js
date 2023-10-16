@@ -14,9 +14,23 @@ const dic = await fetch(`dictionaries/${lang}/${lang}.dic`).then((r) =>
 );
 const spell = nspell({ aff: aff, dic: dic });
 
+const setSessionData = (name, value) => {
+  try {
+    sessionStorage.setItem(name, value);
+  } catch (e) {
+    console.error("Failed to save session data:", e);
+  }
+};
+
 var defaultBindings = null;
 
-const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
+const Editor = ({
+  isDesktop,
+  editorRef,
+  formattedValue,
+  setFormattedValue,
+  workingSource,
+}) => {
   const [spellCheckMistakes, setSpellCheckMistakes] = useState([]);
   const [currentMistake, setCurrentMistake] = useState(null);
   const [editorCorrections, setEditorCorrections] = useState([]);
@@ -225,16 +239,17 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
 
   const handleEditorChange = (value, delta, source, editor) => {
     setFormattedValue(value);
-    if (source === "user") {
+    if ((source === "user" || source === "api") && isDesktop) {
       const mistakes = getMistakes(editor.getText());
       setSpellCheckMistakes(mistakes);
       highlightMistakes(mistakes);
       deselectMistake();
+      setSessionData("editorText", editorRef.current.editor.getText());
     }
   };
 
   const handleEditorChangeSelection = (selection, source, editor) => {
-    if (source === "user") {
+    if (source === "user" && isDesktop) {
       if (selection != null && selection.length === 0) {
         handleSelectionChange(selection);
       } else {
@@ -265,6 +280,8 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
     ) {
       unpreviewCorrection();
       applyCorrection(editorCorrections[selectedCorrection]);
+    } else {
+      return true;
     }
     return false;
   };
@@ -293,32 +310,36 @@ const Editor = ({ editorRef, formattedValue, setFormattedValue }) => {
   }
   return (
     <>
-      <div className="mb-2 p-2 border rounded-md h-14">
-        {editorCorrections.map((correction, index) => (
-          <button
-            key={correction}
-            onClick={(event) => handleCorrectionClick(event, correction)}
-            onMouseEnter={() => previewCorrection(correction)}
-            onMouseLeave={() => unpreviewCorrection(correction)}
-            className={`text-black rounded text-sm w-1/5 ${
-              selectedCorrection === index ? "bg-gray-200" : "bg-white"
-            }`}
-          >
-            {correction}
-          </button>
-        ))}
-      </div>
-      <div className="mb-6 h-full overflow-y-auto">
+      {isDesktop && (
+        <div className={`mb-2 p-2 border rounded-md h-14`}>
+          {workingSource === null &&
+            editorCorrections.map((correction, index) => (
+              <button
+                key={correction}
+                onClick={(event) => handleCorrectionClick(event, correction)}
+                onMouseEnter={() => previewCorrection(correction)}
+                onMouseLeave={() => unpreviewCorrection(correction)}
+                className={`text-black rounded text-sm w-1/5 ${
+                  selectedCorrection === index ? "bg-gray-200" : "bg-white"
+                }`}
+              >
+                {correction}
+              </button>
+            ))}
+        </div>
+      )}
+      <div className="mb-6 h-full w-full overflow-auto">
         <ReactQuill
           ref={editorRef}
           theme="snow"
           placeholder="Enter your text here..."
           value={formattedValue}
-          className="w-full h-full border rounded-md text-lg"
+          className={`w-full h-full border rounded-md text-lg`}
           formats={["color", "background"]}
           onChange={handleEditorChange}
           onChangeSelection={handleEditorChangeSelection}
           modules={editorModules}
+          readOnly={workingSource !== null}
         />
       </div>
     </>

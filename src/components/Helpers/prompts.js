@@ -1,40 +1,147 @@
-export const correctionsPrompt = (text) => {
+const formatInstrucions = {
+  email: `
+The text must be in the format of an email.
+Parts of an email body:
+- Opening
+- Content
+- Closing
+- Signature`.trim(),
+};
+
+export const transformTextPrompt = (text, transformationCommand, format) => {
   return `
-    Correct the following text delimited by triple quotes and provide corrections in a JSON array format. Only correct what is actually wrong. Use the following structure:
-    {
-        "corrections": [
-            {
-            "start": number,
-            "end": number,
-            "correction": string,
-            "explanation": string
-            }
-        ]
-    }
+Execute the following transformation commands for me.
+Use the following format:
 
-    If there are no mistakes, keep the array empty:
-    {
-        "corrections": []
-    }
+Text: the source text you want to transform
+Layout: the layout the text should be in
+Transformation: the transformations you should do to the source text. Do not make any changes that are not asked for.
+Thought: you should always think about what to do
+Output: the transformed text in the correct layout. Do not include part titles (e.g. "Opening", "Content", "Closing", "Signature") or any other information that is not part of the text.
+Observation: Describe what you did in max 15 words
 
-    start is the start index of the characters to be corrected.
-    end is the end index of the characters to be corrected.
-    Make sure that start and end are correct and the range can be replaced with the correction. The first character has index 0.
-    Correction are the corrected characters.
-    Explaination is to explain why the correction is necessary.
-    Text to be corrected:
-    """${text}"""`;
-};
-export const improvementPrompt = (improvementType, text) => {
-  return `Make this text ${improvementType} and correct all spelling mistakes : ${text}`;
+Begin! Remember to use the correct format.
+Text: ${text}
+Layout: ${formatInstrucions[format]}
+Transformation: ${transformationCommand}`.trim();
 };
 
-export const chatPrompt = (chatText, text) => {
+export const generateQuestionsPrompt = (text) => {
   return `
-    This is my current Context: """${text}""", Please do this Command: """${chatText}""",
-    
-    Output should contain just the body of the Mail body, followed by a "---"  and sone sentence saying what you did `;
+Generate questions about the following text.
+Use the following format:
+
+Text: the source text you want to generate questions for
+
+Question: the question you want to generate. The question should be about the information contained in the text, not about the text itself (no formatting, no layout, no spelling, no grammar questions, etc.)
+... (this is repeated for all questions max 5 questions)
+
+Begin! Remember to use the correct format.
+Text: ${text}`.trim();
 };
 
-export const giveNamePrompt = (text) =>
-  `This is my current Context: """${text}""" please give exactly one matching word for it, it should be the naming of a version`;
+export const answerQuestionsPrompt = (text, questions) => {
+  const formattedQuestions = "[" + questions.join(",") + "]";
+  return `
+Answer the following questions.
+Use the following format:
+
+Text: the source text you want to answer questions for
+Questions: the questions you want to answer, wrapped in square brackets
+
+Question: the question you want to answer
+Answer: the answer you want to give
+... (this Question/Answer is repeated for all questions)
+
+Begin! Remember to use the correct format.
+Text: ${text}
+Questions: ${formattedQuestions}`.trim();
+};
+
+export const validateAnswersPrompt = (text, questions, answers) => {
+  var formattedQuestions = "[";
+  var formattedAnswers = "[";
+  questions.forEach((question, index) => {
+    formattedQuestions += question;
+    formattedAnswers += answers.find(
+      (answer) => answer.question === question
+    ).answer;
+    if (index < questions.length - 1) {
+      formattedQuestions += ",";
+      formattedAnswers += ",";
+    }
+  });
+  formattedQuestions += "]";
+  formattedAnswers += "]";
+  return `
+Verify the following answers.
+Do not stop until all answers are verified.
+Use the following format:
+
+Text: the source text you want to verify the answers for
+Questions: the list of questions you want to verify the answers for, wrapped in square brackets
+Answers: the list of answers you want to verify, wrapped in square brackets
+
+Question: the current question you want to verify the answer for
+Answer: the current answer you want to verify
+Valid: yes or no
+... (this Question/Answer/Valid is repeated for all questions)
+
+Begin! Remember to use the correct format.
+Text: ${text}
+Questions: ${formattedQuestions}
+Answers: ${formattedAnswers}`.trim();
+};
+
+export const enrichTextPrompt = (
+  text,
+  transformedText,
+  questions,
+  transformationCommand,
+  format
+) => {
+  const formattedQuestions = "[" + questions.join(",") + "]";
+  return `
+The text was transformed but is missing some information.
+Include the information in the output but make sure to be in line with the transformation command.
+Use the following format:
+
+Text: the source text you want to transform
+Transformation: the transformations you should do to the source text
+Transformed Text: the transformed text that is missing information
+Layout: the layout the text should be in
+Information: the information you want to make sure is included in the transformed text
+Thought: you should always think about what to do.
+Output: the output text in the correct layout. Do not include part titles (e.g. "Opening", "Content", "Closing", "Signature") or any other information that is not part of the text.
+Observation: Describe what you did in max 15 words
+
+Begin! Remember to use the correct format.
+
+Text: ${text}
+Transformation: ${transformationCommand}
+Transformed Text: ${transformedText}
+Layout: ${formatInstrucions[format]}
+Information: ${formattedQuestions}`.trim();
+};
+
+export const suggestPrompt = (text, messages) => {
+  const formattedMessages =
+    messages.length > 0
+      ? messages.length === 1
+        ? messages[0]
+        : "[" + messages.join(",") + "]"
+      : "No previous commands.";
+  return `
+Suggest ways to improve the text. Formulate the suggestion as a command.
+Do not repeat previous commands, when not necessary.
+Only suggest commands that are relevant for the text and can be applied to the text via GPT-3.5.
+Use the following format:
+
+Text: the source text you want to predict the next command for.
+Commands: the previous commands that were applied to the text, wrapped in square brackets.
+Command: the predicted command.
+
+Begin! Remember to use the correct format.
+Text: ${text}
+Commands: ${formattedMessages}`.trim();
+};
