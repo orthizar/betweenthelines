@@ -9,7 +9,7 @@ export const suggest = async (text, messages) => {
     try {
       const response = await invokeLLM(prompt, getMaxTokens(prompt));
       const parsedOutput = response.match(/[\n.]*Command:(.*)/is);
-      const command = parsedOutput[1].trim();
+      const command = parsedOutput[1].trim().replace(/\W+$/, "");
       return command;
     } catch (error) {
       console.error(error);
