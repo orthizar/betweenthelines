@@ -51,8 +51,9 @@ export const sendPictureRequest = async (imageData) => {
         },
       }
     );
-    return response;
+    const imageAnalysis = response.data.responses[0].labelAnnotations.map(annotation => annotation.description);
+    return imageAnalysis;
   } catch (error) {
-    console.error("Fehler bei der API-Anfrage:", error);
+    console.error("Google Vision error:", error);
   }
 };

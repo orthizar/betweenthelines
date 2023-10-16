@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { sendPictureRequest } from "../Helpers/request";
+import { annotateImage } from "../Helpers/image";
 import { BsStars } from "react-icons/bs";
 import { invokePipeline } from "../Helpers/refine";
 import { suggest } from "../Helpers/learn";
@@ -114,12 +114,8 @@ const Chat = ({
         setImage(reader.result);
         sendImageMessage(reader.result);
 
-        // Process the image with Google Vision API
-        const imageAnalysis = await sendPictureRequest(reader.result);
-
-        // Assuming you already have the data in the imageAnalysis variable
-        const descriptions = imageAnalysis.data.responses[0].labelAnnotations.slice(0, 3).map(annotation => annotation.description).join(', ');
-
+        const descriptions = await annotateImage(reader.result);
+        
         console.log(descriptions);
 
 
