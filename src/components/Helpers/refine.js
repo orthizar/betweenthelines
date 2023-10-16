@@ -36,7 +36,7 @@ export async function* invokePipeline(text, imageDescription, transformationComm
           yield await Promise.resolve(transformed.observation);
           step++;
         }
-        if (!refine) {
+        if (!refine || text === "") {
           step = 15;
         }
         if (step === 1) {
