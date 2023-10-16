@@ -1,37 +1,63 @@
 import { CHAT_LABEL, HISTORY_LABEL } from "../Constants";
 import React, { useState } from "react";
 
-import Chat from "../Chat";
-import History from "../History";
-import Menu from "../Menu";
+import Chat from "../Chat/index";
+import History from "../History/index";
+import Menu from "../Menu/index";
 
 const getSessionData = (name) => {
-    try {
-        return sessionStorage.getItem(name);
-    } catch (e) {
-        console.error("Failed to retrieve session data:", e);
-        return null;
-    }
+  try {
+    return sessionStorage.getItem(name);
+  } catch (e) {
+    console.error("Failed to retrieve session data:", e);
+    return null;
+  }
 };
 
-const WindowControl = ({ getEditorText, setFormattedValue }) => {
+const WindowControl = ({
+  getPlainText,
+  setTextWithHtml,
+  activeVersion,
+  setActiveVersion,
+  shouldRefine,
+  workingSource,
+  setWorkingSource,
+}) => {
   const [activeMenuItem, setActiveMenuItem] = useState("chat");
+  const cookieValue = getSessionData("chatMessages");
 
-    const cookieValue = getSessionData('chatMessages');
-    const initialChatMessages = cookieValue ? JSON.parse(cookieValue) : [{ id: 1, author: "Bot", text: "Hello, how may I help you?" }];
+  const initialChatMessages = cookieValue
+    ? JSON.parse(cookieValue)
+    : [
+        {
+          id: 1,
+          author: "Bot",
+          text: "Hello, how may I help you?",
+        },
+      ];
 
-    const activeComponent =
+  const activeComponent =
     (activeMenuItem === CHAT_LABEL && (
       <Chat
-        getEditorText={getEditorText}
-        setFormattedValue={setFormattedValue}
+        getPlainText={getPlainText}
+        setTextWithHtml={setTextWithHtml}
         state={initialChatMessages}
+        shouldRefine={shouldRefine}
+        workingSource={workingSource}
+        setWorkingSource={setWorkingSource}
       />
     )) ||
-    (activeMenuItem === HISTORY_LABEL && <History />);
+    (activeMenuItem === HISTORY_LABEL && (
+      <History
+        getPlainText={getPlainText}
+        setTextWithHtml={setTextWithHtml}
+        activeVersion={activeVersion}
+        setActiveVersion={setActiveVersion}
+      />
+    ));
 
   return (
-    <div className="bg-white shadow-xl p-8 rounded-lg w-2/5 flex flex-col mr-6">
+    <div className="bg-white shadow-xl p-8 rounded-lg w-full md:w-[32%] flex flex-none flex-col">
       <div className="flex justify-between items-center mb-4">
         <Menu
           activeMenuItem={activeMenuItem}

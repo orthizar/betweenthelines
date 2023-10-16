@@ -1,5 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
-import { sendChatGptRequest, sendPictureRequest } from "../Helpers/request";
+import { sendPictureRequest } from "../Helpers/request";
+import { BsStars } from "react-icons/bs";
+import { invokePipeline } from "../Helpers/refine";
+import { suggest } from "../Helpers/learn";
 
 const setSessionData = (name, value) => {
   try {
@@ -9,11 +12,23 @@ const setSessionData = (name, value) => {
   }
 };
 
-const Chat = ({ getEditorText, setFormattedValue, state }) => {
+var isGeneratingSuggestion = false;
+
+const Chat = ({
+  getPlainText,
+  setTextWithHtml,
+  state,
+  shouldRefine,
+  workingSource,
+  setWorkingSource,
+}) => {
   const chatContainerRef = useRef(null);
+  const chatInputRef = useRef(null);
   const [chatMessages, setChatMessages] = useState(state);
-  const [message, setMessage] = useState("");
   const [image, setImage] = useState(null);
+  const [chatInputDisabled, setChatInputDisabled] = useState(false);
+  const [message, setMessage] = useState("");
+  const [suggestion, setSuggestion] = useState(null);
 
   useEffect(() => {
     scrollToBottom();
@@ -21,41 +36,73 @@ const Chat = ({ getEditorText, setFormattedValue, state }) => {
 
   const scrollToBottom = () => {
     if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+      chatContainerRef.current.scrollTop =
+        chatContainerRef.current.scrollHeight;
     }
   };
 
   const updateChatMessages = (newMessages) => {
     setChatMessages(newMessages);
-    setSessionData('chatMessages', JSON.stringify(newMessages));
+    setSessionData("chatMessages", JSON.stringify(newMessages));
   };
 
   const isMyMessage = (author) => author === "User";
 
   const sendMessage = async () => {
     if (message.trim() !== "") {
-      updateChatMessages([...chatMessages, {
-        id: chatMessages.length + 1,
-        author: "User",
-        text: message,
-      }]);
+      setWorkingSource("chat");
+      updateChatMessages([
+        ...chatMessages,
+        {
+          id: chatMessages.length + 1,
+          author: "User",
+          text: message,
+        },
+      ]);
 
+      var messages = [
+        ...chatMessages,
+        {
+          id: chatMessages.length + 1,
+          author: "User",
+          text: message,
+        },
+      ];
       setMessage("");
-      const gptResponse = await sendChatGptRequest(message, getEditorText());
-      const gptResponseChat = gptResponse.split("---")[1];
-      const gptResponseEditor = gptResponse.split("---")[0];
-      updateChatMessages([...chatMessages, {
-        id: chatMessages.length + 1,
-        author: "User",
-        text: message,
-      }, {
-        id: chatMessages.length + 2,
-        author: "Bot",
-        text: gptResponseChat,
-      }]);
-
-      const value = gptResponseEditor.replace(/(?:\r\n|\r|\n|\\n)/g, '\n').trim().replace(/\n/g, '<br>');
-      setFormattedValue(value);
+      updateChatMessages(messages);
+      setChatInputDisabled(true);
+      for await (const transformed of invokePipeline(
+        getPlainText(),
+        message,
+        shouldRefine
+      )) {
+        if (transformed.output === undefined) {
+          const chatResponse = transformed;
+          messages = [
+            ...messages,
+            {
+              id: messages.length + 1,
+              author: "Bot",
+              text: chatResponse,
+            },
+          ];
+          updateChatMessages(messages);
+        } else {
+          const transformedText = transformed.output;
+          const value = transformedText
+            .replace(/(?:\r\n|\r|\n|\\n)/g, "\n")
+            .trim()
+            .replace(/\n/g, "<br>");
+          setTextWithHtml(value);
+          setChatInputDisabled(false);
+          setWorkingSource(null);
+          setSuggestion(null);
+          return;
+        }
+      }
+      setChatInputDisabled(false);
+      setWorkingSource(null);
+      setSuggestion(null);
     }
   };
 
@@ -66,10 +113,10 @@ const Chat = ({ getEditorText, setFormattedValue, state }) => {
       reader.onloadend = async () => {
         setImage(reader.result);
         sendImageMessage(reader.result);
-        
+
         // Process the image with Google Vision API
         const imageAnalysis = await sendPictureRequest(reader.result);
-        
+
         // Assuming you already have the data in the imageAnalysis variable
         const descriptions = imageAnalysis.data.responses[0].labelAnnotations.slice(0, 3).map(annotation => annotation.description).join(', ');
 
@@ -91,19 +138,46 @@ const Chat = ({ getEditorText, setFormattedValue, state }) => {
   };
 
   const handleKeyDown = (event) => {
-    if (event.key === 'Enter' && !event.shiftKey) {
+    if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
       sendMessage();
     }
   };
 
+  if (suggestion === null && !isGeneratingSuggestion) {
+    isGeneratingSuggestion = true;
+    setTimeout(async () => {
+      const messages = chatMessages
+        .filter((message) => isMyMessage(message.author))
+        .map((message) => message.text);
+      console.log("suggest");
+      suggest(getPlainText(), messages).then((suggestion) => {
+        setSuggestion(suggestion);
+      });
+    }, 0);
+  } else if (isGeneratingSuggestion) {
+    isGeneratingSuggestion = false;
+  }
+
   return (
     <div className="flex flex-col h-full">
-      <div className="flex-grow overflow-y-auto max-h-[20rem]" ref={chatContainerRef}>
+      <div
+        className="flex-grow overflow-y-auto max-h-[22rem]"
+        ref={chatContainerRef}
+      >
         <div className="mb-6 overflow-y-auto px-4">
           {chatMessages.map((chatMessage) => (
-            <div key={chatMessage.id} className={`flex flex-col mb-3 ${isMyMessage(chatMessage.author) ? "items-end" : "items-start"}`}>
-              <div className={`text-xs mb-1 ${isMyMessage(chatMessage.author) ? "text-gray-600 mr-1" : "text-gray-600 ml-1"}`}>
+            <div
+              key={chatMessage.id}
+              className={`flex flex-col mb-3 ${isMyMessage(chatMessage.author) ? "items-end" : "items-start"
+                }`}
+            >
+              <div
+                className={`text-xs mb-1 ${isMyMessage(chatMessage.author)
+                    ? "text-gray-600 mr-1"
+                    : "text-gray-600 ml-1"
+                  }`}
+              >
                 {!isMyMessage(chatMessage.author) && (
                   <div className="text-xs mb-1 text-gray-600">
                     {chatMessage.author}
@@ -120,16 +194,33 @@ const Chat = ({ getEditorText, setFormattedValue, state }) => {
           ))}
         </div>
       </div>
-      <div className="">
+
+      <div>
         <input
           type="file"
           onChange={handleImageChange}
           accept="image/*"
           className="mb-2"
         ></input>
+        <button
+          className="text-xs w-full p-1 border rounded-md text-left text-gray mb-2 flex items-center"
+          onClick={() => {
+            setMessage(suggestion);
+            setSuggestion(null);
+            setTimeout(() => chatInputRef.current.focus(), 0);
+          }}
+          disabled={chatInputDisabled || suggestion === null}
+        >
+          <BsStars /> {suggestion !== null ? suggestion : "Please wait..."}
+        </button>
         <textarea
-          onChange={(event) => setMessage(event.target.value)} onKeyDown={handleKeyDown}
-          placeholder="Enter message..."
+          ref={chatInputRef}
+          onChange={(event) => setMessage(event.target.value)}
+          onKeyDown={(event) => setTimeout(() => handleKeyDown(event), 0)}
+          placeholder={
+            chatInputDisabled ? "Please wait..." : "Type your message here..."
+          }
+          disabled={chatInputDisabled}
           value={message}
           className="w-full p-2 border rounded-md resize-none mb-2"
           rows="2"
@@ -137,9 +228,14 @@ const Chat = ({ getEditorText, setFormattedValue, state }) => {
         ></textarea>
         <button
           onClick={sendMessage}
-          className="w-full bg-blue-500 text-white p-2 rounded"
+          className="w-full bg-blue-500 h-10 text-white rounded"
+          disabled={workingSource !== null}
         >
-          Send
+          {workingSource === "chat" ? (
+            <div className="inline-block h-7 w-7 animate-spin motion-reduce:animate-[spin_1.5s_linear_infinite] rounded-full border-4 border-solid border-current border-r-transparent align-[-0.25em] text-white" />
+          ) : (
+            <p className="m-2">Send</p>
+          )}
         </button>
       </div>
     </div>
