@@ -1,3 +1,6 @@
+export const getMaxTokens = (prompt) => {
+  return 4096 - ~~(prompt.length / 3.5);
+};
 const formatInstrucions = {
   email: `
 The text must be in the format of an email.
