@@ -27,7 +27,7 @@ const Chat = ({
   const chatInputRef = useRef(null);
   const [chatMessages, setChatMessages] = useState(state);
   const [image, setImage] = useState(null);
-  const [imageDescription, setImageDescription] = useState(null);
+  const [imageAnnotations, setImageAnnotations] = useState(null);
   const [chatInputDisabled, setChatInputDisabled] = useState(false);
   const [message, setMessage] = useState("");
   const [suggestion, setSuggestion] = useState(null);
@@ -67,12 +67,12 @@ const Chat = ({
       ];
       setMessage("");
       setImage(null);
-      setImageDescription(null);
+      setImageAnnotations(null);
       updateChatMessages(messages);
       setChatInputDisabled(true);
       for await (const transformed of invokePipeline(
         getPlainText(),
-        imageDescription,
+        imageAnnotations,
         message,
         shouldRefine
       )) {
@@ -113,8 +113,8 @@ const Chat = ({
       reader.onloadend = async () => {
         setImage(reader.result);
 
-        const descriptions = await annotateImage(reader.result);
-        setImageDescription(descriptions);
+        const annotations = await annotateImage(reader.result);
+        setImageAnnotations(annotations);
       };
       reader.readAsDataURL(file);
     }
@@ -145,7 +145,7 @@ const Chat = ({
   return (
     <div className="flex flex-col h-full">
       <div
-        className="flex-grow overflow-y-auto max-h-[22rem]"
+        className="flex-grow overflow-y-auto"
         ref={chatContainerRef}
       >
         <div className="mb-6 overflow-y-auto px-4">
@@ -178,7 +178,7 @@ const Chat = ({
         </div>
       </div>
 
-      <div>
+      <div className="flex-grow">
         <button
           className="text-xs w-full p-1 border rounded-md text-left text-gray mb-2 flex items-center"
           onClick={() => {
@@ -220,7 +220,7 @@ const Chat = ({
               {image ? (
                 <img
                   src={image}
-                  alt={imageDescription ? imageDescription.join(", ") : ""}
+                  alt="Uploaded content"
                   className="max-w-full max-h-full"
                 />
               ) : (

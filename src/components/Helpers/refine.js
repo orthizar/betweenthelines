@@ -165,8 +165,8 @@ const getMaxTokens = (prompt) => {
   return 4096 - ~~(prompt.length / 3.5);
 };
 
-const transformText = async (text, imageDescription, transformationCommand, format) => {
-  const prompt = transformTextPrompt(text, imageDescription, transformationCommand, format);
+const transformText = async (text, imageAnnotations, transformationCommand, format) => {
+  const prompt = transformTextPrompt(text, imageAnnotations, transformationCommand, format);
   const transformedText = await invokeLLM(prompt, getMaxTokens(prompt));
   const parsedOutput = transformedText.match(
     /[\n.]*Thought:\n*(.*)Output:\n*(.*)Observation:\n*(.*)/is

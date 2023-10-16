@@ -27,7 +27,7 @@ export const invokeLLM = async (prompt, tokens) => {
   }
 };
 
-export const sendPictureRequest = async (imageData) => {
+export const sendImageRequest = async (imageData) => {
   const apiKey = process.env.REACT_APP_GOOGLE_API_KEY;
   const apiUrl = `https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`;
   try {
@@ -39,7 +39,11 @@ export const sendPictureRequest = async (imageData) => {
             image: { content: imageData.split(",")[1] }, // extract the base64 part
             features: 
             [
-              { type: "LABEL_DETECTION" }
+              { type: "LABEL_DETECTION" },
+              { type: "DOCUMENT_TEXT_DETECTION" },
+              { type: "LOGO_DETECTION" },
+              { type: "WEB_DETECTION" },
+              { type: "OBJECT_LOCALIZATION" }
             ]
           }
         ]
@@ -51,8 +55,8 @@ export const sendPictureRequest = async (imageData) => {
         },
       }
     );
-    const imageAnalysis = response.data.responses[0].labelAnnotations.map(annotation => annotation.description);
-    return imageAnalysis;
+    const annotations = response.data.responses[0];
+    return annotations;
   } catch (error) {
     console.error("Google Vision error:", error);
   }
