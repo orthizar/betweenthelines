@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { sendChatGptRequest } from "../Helpers/request";
+import { sendChatGptRequest, sendPictureRequest } from "../Helpers/request";
 
 const setSessionData = (name, value) => {
   try {
@@ -59,13 +59,24 @@ const Chat = ({ getEditorText, setFormattedValue, state }) => {
     }
   };
 
-  const handleImageChange = (e) => {
+  const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
+      reader.onloadend = async () => {
         setImage(reader.result);
         sendImageMessage(reader.result);
+        
+        // Process the image with Google Vision API
+        const imageAnalysis = await sendPictureRequest(reader.result);
+        
+        // Assuming you already have the data in the imageAnalysis variable
+        const descriptions = imageAnalysis.data.responses[0].labelAnnotations.slice(0, 3).map(annotation => annotation.description).join(', ');
+
+        console.log(descriptions);
+
+
+        // console.log(imageAnalysis);
       };
       reader.readAsDataURL(file);
     }
@@ -88,7 +99,7 @@ const Chat = ({ getEditorText, setFormattedValue, state }) => {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex-grow overflow-y-auto max-h-[20rem]" ref={chatContainerRef} >
+      <div className="flex-grow overflow-y-auto max-h-[20rem]" ref={chatContainerRef}>
         <div className="mb-6 overflow-y-auto px-4">
           {chatMessages.map((chatMessage) => (
             <div key={chatMessage.id} className={`flex flex-col mb-3 ${isMyMessage(chatMessage.author) ? "items-end" : "items-start"}`}>

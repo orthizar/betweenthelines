@@ -35,3 +35,10 @@ export const chatPrompt = (chatText, text) => {
     
     Output should contain just the body of the Mail body, followed by a "---"  and sone sentence saying what you did `;
 }
+
+export const chatPicturePromt = (chatText, text, pictureDetails) => {
+    return `
+    This is my current Context: """${text}""", Please do this Command: """${chatText}""",
+    
+    Output should contain just the body of the Mail body, followed by a "---"  and sone sentence saying what you did `;
+}
