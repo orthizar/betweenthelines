@@ -32,7 +32,7 @@ const getSessionData = (name) => {
 
 const ChatGPT = () => {
   const [textWithHTML, setTextWithHtml] = useState(
-    (getSessionData("editorText") || "").replace(/<br>/g, "\n")
+    (getSessionData("editorText") || "").replace(/\n/g, "<br>")
   );
   const [activeVersion, setActiveVersion] = useState();
   const [activeTab, setActiveTab] = useState("editor");
