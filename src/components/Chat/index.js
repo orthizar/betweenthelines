@@ -1,6 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
-
+import React, { useState, useRef, useEffect } from "react";
+import { annotateImage } from "../Helpers/image";
 import { BsStars } from "react-icons/bs";
+import { BiImageAdd } from "react-icons/bi";
 import { invokePipeline } from "../Helpers/refine";
 import { suggest } from "../Helpers/learn";
 
@@ -25,6 +26,8 @@ const Chat = ({
   const chatContainerRef = useRef(null);
   const chatInputRef = useRef(null);
   const [chatMessages, setChatMessages] = useState(state);
+  const [image, setImage] = useState(null);
+  const [imageAnnotations, setImageAnnotations] = useState(null);
   const [chatInputDisabled, setChatInputDisabled] = useState(false);
   const [message, setMessage] = useState("");
   const [suggestion, setSuggestion] = useState(null);
@@ -50,28 +53,26 @@ const Chat = ({
   const sendMessage = async () => {
     if (message.trim() !== "") {
       setWorkingSource("chat");
-      updateChatMessages([
-        ...chatMessages,
-        {
+      var messages = [
+        ...chatMessages, {
           id: chatMessages.length + 1,
           author: "User",
-          text: message,
+          image: image,
         },
-      ]);
-
-      var messages = [
-        ...chatMessages,
         {
-          id: chatMessages.length + 1,
+          id: chatMessages.length + 2,
           author: "User",
           text: message,
         },
       ];
       setMessage("");
+      setImage(null);
+      setImageAnnotations(null);
       updateChatMessages(messages);
       setChatInputDisabled(true);
       for await (const transformed of invokePipeline(
         getPlainText(),
+        imageAnnotations,
         message,
         shouldRefine
       )) {
@@ -105,6 +106,20 @@ const Chat = ({
     }
   };
 
+  const handleImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        setImage(reader.result);
+
+        const annotations = await annotateImage(reader.result);
+        setImageAnnotations(annotations);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleKeyDown = (event) => {
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
@@ -130,23 +145,21 @@ const Chat = ({
   return (
     <div className="flex flex-col h-full">
       <div
-        className="flex-grow overflow-y-auto max-h-[22rem]"
+        className="flex-grow overflow-y-auto"
         ref={chatContainerRef}
       >
         <div className="mb-6 overflow-y-auto px-4">
           {chatMessages.map((chatMessage) => (
             <div
               key={chatMessage.id}
-              className={`flex flex-col mb-3 ${
-                isMyMessage(chatMessage.author) ? "items-end" : "items-start"
-              }`}
+              className={`flex flex-col mb-3 ${isMyMessage(chatMessage.author) ? "items-end" : "items-start"
+                }`}
             >
               <div
-                className={`text-xs mb-1 ${
-                  isMyMessage(chatMessage.author)
-                    ? "text-gray-600 mr-1"
-                    : "text-gray-600 ml-1"
-                }`}
+                className={`text-xs mb-1 ${isMyMessage(chatMessage.author)
+                  ? "text-gray-600 mr-1"
+                  : "text-gray-600 ml-1"
+                  }`}
               >
                 {!isMyMessage(chatMessage.author) && (
                   <div className="text-xs mb-1 text-gray-600">
@@ -154,15 +167,10 @@ const Chat = ({
                   </div>
                 )}
               </div>
-              <div className={"max-w-[15rem]"}>
-                <div
-                  className={`relative p-3 rounded-lg ${
-                    isMyMessage(chatMessage.author)
-                      ? "bg-blue-200 text-right mr-1"
-                      : "bg-gray-200 ml-1"
-                  }`}
-                >
-                  <p className={"text-left"}>{chatMessage.text}</p>
+              <div className={'max-w-[15rem]'}>
+                <div className={`relative p-3 rounded-lg ${isMyMessage(chatMessage.author) ? "bg-blue-200 text-right mr-1" : "bg-gray-200 ml-1"}`}>
+                  {chatMessage.text && <p>{chatMessage.text}</p>}
+                  {chatMessage.image && <img src={chatMessage.image} alt="Uploaded content" className="max-w-full max-h-40" />}
                 </div>
               </div>
             </div>
@@ -170,7 +178,7 @@ const Chat = ({
         </div>
       </div>
 
-      <div>
+      <div className="flex-grow">
         <button
           className="text-xs w-full p-1 border rounded-md text-left text-gray mb-2 flex items-center"
           onClick={() => {
@@ -195,17 +203,46 @@ const Chat = ({
           rows="2"
           maxLength={280}
         ></textarea>
-        <button
-          onClick={sendMessage}
-          className="w-full bg-blue-500 h-10 text-white rounded"
-          disabled={workingSource !== null}
+        <div
+          className="flex justify-between mb-2 gap-1"
         >
-          {workingSource === "chat" ? (
-            <div className="inline-block h-7 w-7 animate-spin motion-reduce:animate-[spin_1.5s_linear_infinite] rounded-full border-4 border-solid border-current border-r-transparent align-[-0.25em] text-white" />
-          ) : (
-            <p className="m-2">Send</p>
-          )}
-        </button>
+          <input
+            type="file"
+            id="image-input"
+            onChange={handleImageChange}
+            accept="image/*"
+            className="mb-2 hidden"
+          ></input>
+          <label htmlFor="image-input">
+            <div
+              className="bg-blue-500 h-10 w-10 p-1 text-white rounded flex items-center justify-center cursor-pointer"
+            >
+              {image ? (
+                <img
+                  src={image}
+                  alt="Uploaded content"
+                  className="max-w-full max-h-full"
+                />
+              ) : (
+                <BiImageAdd
+                  className="text-lg text-white cursor-pointer"
+                />
+              )}
+            </div>
+          </label>
+          <button
+            onClick={sendMessage}
+            className="w-full bg-blue-500 h-10 text-white rounded"
+            disabled={workingSource !== null}
+          >
+            {workingSource === "chat" ? (
+              <div className="inline-block h-7 w-7 animate-spin motion-reduce:animate-[spin_1.5s_linear_infinite] rounded-full border-4 border-solid border-current border-r-transparent align-[-0.25em] text-white" />
+            ) : (
+              <p className="m-2">Send</p>
+            )}
+          </button>
+        </div>
+
       </div>
     </div>
   );
