@@ -57,7 +57,7 @@ export const deleteVersion = (versionId) => {
 export const saveVersion = (versionId, newText) => {
   let versions = getVersions();
 
-  if (!newText) {
+  if (newText) {
     const versionIndex = versions.findIndex(
       (version) => version.id === versionId
     );
