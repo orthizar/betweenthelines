@@ -56,46 +56,50 @@ const History = ({
   };
 
   return (
-    <div className="overflow-y-scroll flex items-center flex-col justify-between h-full">
-      {!getVersions().length && (
-        <p className="mb-3 text-gray-500 dark:text-gray-400 m-full text-center">
-          No history yet
-        </p>
-      )}
-      {getVersions().map((version) => {
-        const versionId = version.id;
-        return (
-          <div
-            className={classNames(
-              commonStyles,
-              activeVersion === version.id ? activeStyles : inActiveStyles
-            )}
-            key={versionId}
-            onClick={() => handleVersionPress(versionId)}
-          >
-            <div className="pt-3">
-              <p className="mb-3 text-gray-500 dark:text-gray-600">
-                {version.id}
-              </p>
-              <p className="mb-3 text-gray-500 dark:text-gray-400 truncate overflow-hidden text-ellipsis">
-                {version.description}
-              </p>
+    <>
+      <div className="overflow-y-scroll h-full">
+        {!getVersions().length && (
+          <p className="mb-3 text-gray-500 dark:text-gray-400 m-full text-center">
+            No history yet
+          </p>
+        )}
+        {getVersions().map((version) => {
+          const versionId = version.id;
+          return (
+            <div
+              className={classNames(
+                commonStyles,
+                activeVersion === version.id ? activeStyles : inActiveStyles
+              )}
+              key={versionId}
+              onClick={() => handleVersionPress(versionId)}
+            >
+              <div className="w-full">
+                <div className="flex items-start justify-between">
+                  <p className="text-gray-500 dark:text-gray-600">
+                    {`Version ${versionId}`}
+                  </p>
+                  <RiDeleteBin6Line
+                    className="text-red-600 cursor-pointer hover:text-red-700"
+                    size={20}
+                    onClick={() => handleDelete(versionId)}
+                  />
+                </div>
+                <p className="mt-3 text-gray-500 dark:text-gray-400 truncate text-ellipsis overflow-hidden">
+                  {version.description}
+                </p>
+              </div>
             </div>
-            <RiDeleteBin6Line
-              className="text-red-600 cursor-pointer"
-              size={20}
-              onClick={() => handleDelete(versionId)}
-            />
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
       <button
-        className="bg-red-500 hover:bg-red-700 w-full text-white p-2 rounded"
+        className="bg-red-500 hover:bg-red-700 w-full text-white p-2 rounded mt-5"
         onClick={handleDeleteAll}
       >
         Delete all versions
       </button>
-    </div>
+    </>
   );
 };
 
