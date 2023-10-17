@@ -27,7 +27,7 @@ Image Web: ${imageAnnotations.web ? "[" + imageAnnotations.web.join(",") + "]" :
 Image Objects: ${imageAnnotations.objects ? "[" + imageAnnotations.objects.join(",") + "]" : "No objects found."}
 `.trim() : "";
   return `
-Execute the following transformation commands for me.
+Transform the text according to the transformation command.
 Use the following format:
 
 Text: the source text you want to transform ${imageAnnotations ? "\n" + imageInstructions : ""}
