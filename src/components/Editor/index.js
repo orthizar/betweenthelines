@@ -37,8 +37,11 @@ const Editor = ({
   const [selectedCorrection, setSelectedCorrection] = useState(null);
   const [currentPreviewCorrection, setCurrentPreviewCorrection] =
     useState(null);
+  const [edits, setEdits] = useState([]);
+  const [prevEditorText, setPrevEditorText] = useState("");
 
   // Mistake checking
+  
   const getMistakes = (text) => {
     const words = text.split(/[\n\s]/);
     var index = 0;
@@ -219,6 +222,65 @@ const Editor = ({
       setCurrentPreviewCorrection(null);
     }
   };
+
+  // Edits
+
+  const opsToAction = (ops) => {
+    var action = {
+      retain: 0,
+      insert: null,
+      delete: null,
+      len: 0,
+    };
+    ops.forEach((op) => {
+      if (op.retain != null) {
+        action.retain = op.retain;
+      } else if (op.insert != null) {
+        action.len = op.insert.length;
+        action.insert = op.insert;
+      } else if (op.delete != null) {
+        action.len = op.delete;
+        action.delete = prevEditorText.slice(action.retain, action.retain + action.len);
+        console.log(prevEditorText.slice(action.retain, action.retain + action.len));
+      }
+    });
+    return action;
+  };
+
+  const getEditType = (action, lastEdit) => {
+    // a delete followed by an insert at the same index is a move, except if the insert is not the same as the delete, then it's a replace
+    // a delete followed by anything at a different index is a delete
+    // an insert followed by anything at a different index is an insert
+    // we do not care about formatting changes and insertions that are not moves or replaces
+    if (action.delete != null) {
+      return "delete";
+    } else if (action.insert != null) {
+      if (lastEdit.type === "delete") {
+        if (lastEdit.retain === action.retain) {
+          if (lastEdit.length === action.insert.length) {
+            return "replace";
+          }
+        } else if (lastEdit.text === (action.insert || action.delete)) {
+          return "move";
+        }
+      }
+      return "insert";
+    };
+    return null;
+  };
+
+  const parseDelta = (delta, lastEdit) => {
+    const action = opsToAction(delta.ops);
+    var edit = {};
+    edit.index = action.retain;
+    edit.len = action.len;
+    edit.text = action.insert || action.delete;
+    edit.type = getEditType(action, lastEdit);
+    edit.prefix = prevEditorText.slice(0, edit.index);
+    edit.suffix = prevEditorText.slice(edit.index + edit.len, prevEditorText.length);
+    return edit;
+  };
+
   // Event handlers
 
   const handleSelectionChange = (selection) => {
@@ -239,6 +301,21 @@ const Editor = ({
   };
 
   const handleEditorChange = (value, delta, source, editor) => {
+    if (source === "user") {
+      const lastEdit = edits[edits.length - 1];
+      const edit = parseDelta(delta, lastEdit);
+      console.log("edits", edits);
+      console.log("edit", edit)
+      var newEdits = edits;
+      if (edit.type === "move" || edit.type === "replace") {
+        newEdits.pop();
+      } else if (lastEdit && lastEdit.type === "insert") {
+        newEdits.pop();
+      }
+      newEdits = [...newEdits, edit];
+      setEdits(newEdits);
+    }
+    setPrevEditorText(editor.getText());
     setFormattedValue(value);
     if ((source === "user" || source === "api") && isDesktop) {
       const mistakes = getMistakes(editor.getText());
@@ -265,9 +342,9 @@ const Editor = ({
       navigateCorrections();
       previewCorrection(
         editorCorrections[
-          selectedCorrection == null
-            ? 0
-            : (selectedCorrection + 1) % editorCorrections.length
+        selectedCorrection == null
+          ? 0
+          : (selectedCorrection + 1) % editorCorrections.length
         ]
       );
     }
@@ -320,9 +397,8 @@ const Editor = ({
                 onClick={(event) => handleCorrectionClick(event, correction)}
                 onMouseEnter={() => previewCorrection(correction)}
                 onMouseLeave={() => unpreviewCorrection(correction)}
-                className={`text-black rounded text-sm w-1/5 ${
-                  selectedCorrection === index ? "bg-gray-200" : "bg-white"
-                }`}
+                className={`text-black rounded text-sm w-1/5 ${selectedCorrection === index ? "bg-gray-200" : "bg-white"
+                  }`}
               >
                 {correction}
               </button>
