@@ -163,3 +163,19 @@ Begin! Remember to use the correct format.
 Text: ${text}
 Commands: ${formattedMessages}`.trim();
 };
+
+const suggestEditsPrompt = (text, edits) => {
+  const formattedEdits = "TODO";
+  return `
+Suggest edits to the text that are in line with the previous edits from the user.
+Use the following format:
+
+Text: the source text you want to edit
+Edits: the previous edits that were applied to the text, wrapped in square brackets
+Edit: the suggested edit
+Edited Text: the text after applying the suggested edit
+
+Begin! Remember to use the correct format.
+Text: ${text}
+Edits: ${formattedEdits}`.trim();
+};

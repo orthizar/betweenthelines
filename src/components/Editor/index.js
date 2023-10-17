@@ -5,6 +5,8 @@ import React, { useState } from "react";
 import ReactQuill from "react-quill";
 import nspell from "nspell";
 
+import { suggestEdits } from "../Helpers/edits";
+
 var lang = "en_US";
 const aff = await fetch(`dictionaries/${lang}/${lang}.aff`).then((r) =>
   r.text()
@@ -39,9 +41,11 @@ const Editor = ({
     useState(null);
   const [edits, setEdits] = useState([]);
   const [prevEditorText, setPrevEditorText] = useState("");
+  const [editTimer, setEditTimer] = useState(null);
+  const [smartEdits, setSmartEdits] = useState([]);
 
   // Mistake checking
-  
+
   const getMistakes = (text) => {
     const words = text.split(/[\n\s]/);
     var index = 0;
@@ -302,10 +306,11 @@ const Editor = ({
 
   const handleEditorChange = (value, delta, source, editor) => {
     if (source === "user") {
+      if (editTimer !== null) {
+        clearTimeout(editTimer);
+      };
       const lastEdit = edits[edits.length - 1];
       const edit = parseDelta(delta, lastEdit);
-      console.log("edits", edits);
-      console.log("edit", edit)
       var newEdits = edits;
       if (edit.type === "move" || edit.type === "replace") {
         newEdits.pop();
@@ -314,6 +319,10 @@ const Editor = ({
       }
       newEdits = [...newEdits, edit];
       setEdits(newEdits);
+      setEditTimer(setTimeout(() => {
+        setSmartEdits(suggestEdits(newEdits));
+        setEditTimer(null);
+      }, 1000));
     }
     setPrevEditorText(editor.getText());
     setFormattedValue(value);
