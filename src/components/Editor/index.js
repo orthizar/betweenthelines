@@ -311,6 +311,13 @@ const Editor = ({
     applyCorrection(correction);
   };
 
+  const handleSmartEditClick = (event, smartEdit) => {
+    event.preventDefault();
+    editorRef.current.editor.setText(smartEdit.editedText, "silent");
+    setEdits((prevEdits) => [...prevEdits, smartEdit]);
+    setSmartEdit(null);
+  };
+
   const handleEditorChange = (value, delta, source, editor) => {
     if (source === "user") {
       if (editTimer !== null) {
@@ -432,10 +439,11 @@ const Editor = ({
             ))}
           {workingSource === null && editorCorrections.length === 0 && smartEdit !== null && (
             <button
-              key={smartEdit.edit}
-              className={`text-black rounded text-sm w-full  "bg-white"`}
+              key={smartEdit.summary}
+              onClick={event => handleSmartEditClick(event, smartEdit)}
+              className={`text-black rounded text-sm w-full h-10 "bg-white"`}
             >
-              {smartEdit.edit}
+              {smartEdit.summary}
             </button>
           )}
         </div>

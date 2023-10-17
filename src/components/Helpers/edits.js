@@ -11,7 +11,8 @@ export const suggestEdit = async (text, edits) => {
     const response = await invokeLLM(prompt, getMaxTokens(prompt));
     const parsedOutput = response.match(/[\n.]*Edit:(.*)Edited Text:(.*)/is);
     const edit = {
-        edit: parsedOutput[1].trim().replace(/\W+$/, ""),
+        type: "move",
+        summary: parsedOutput[1].trim().replace(/\W+$/, ""),
         editedText: parsedOutput[2].trim().replace(/\W+$/, "")
     };
     console.log("edit", edit)
