@@ -16,6 +16,14 @@ export const getDescriptionFromVersion = (versionId) =>
 
 export const getIndexFromLatestVersion = () => getVersions().length - 1;
 
+export const highestID = () => {
+  const versions = getVersions();
+
+  return versions.reduce((highestID, version) => {
+    return version.id > highestID ? version.id : highestID;
+  }, 0);
+};
+
 export const createVersion = (description, textInEditor, newText) => {
   const versions = getVersions();
   const isVersion0 = versions.length < 1;
@@ -23,19 +31,19 @@ export const createVersion = (description, textInEditor, newText) => {
   if (textInEditor.length > 1) {
     if (isVersion0) {
       const baseVersion = {
-        id: 1,
+        id: highestID(),
         description: "Base",
         text: textInEditor,
       };
       versions.push(baseVersion);
     }
 
-    const newActiveVersion = versions.length + 1;
+    const newActiveVersion = highestID() + 1;
 
     const newVersion = {
       id: newActiveVersion,
       description: description,
-      text: newText ? newText : textInEditor,
+      text: newText,
     };
 
     versions.push(newVersion);
