@@ -5,7 +5,7 @@ import React, { useState } from "react";
 import ReactQuill from "react-quill";
 import nspell from "nspell";
 
-import { suggestEdits } from "../Helpers/edits";
+import { suggestEdit, summarizeEdit } from "../Helpers/edits";
 
 var lang = "en_US";
 const aff = await fetch(`dictionaries/${lang}/${lang}.aff`).then((r) =>
@@ -42,8 +42,8 @@ const Editor = ({
   const [edits, setEdits] = useState([]);
   const [prevEditorText, setPrevEditorText] = useState("");
   const [editTimer, setEditTimer] = useState(null);
-  const [smartEdits, setSmartEdits] = useState([]);
-
+  const [smartEdit, setSmartEdit] = useState(null);
+  const [summarizedEdits, setSummarizedEdits] = useState([]);
   // Mistake checking
 
   const getMistakes = (text) => {
@@ -256,15 +256,21 @@ const Editor = ({
     // a delete followed by anything at a different index is a delete
     // an insert followed by anything at a different index is an insert
     // we do not care about formatting changes and insertions that are not moves or replaces
+    console.log("action", action);
+    console.log("lastEdit", lastEdit);
     if (action.delete != null) {
       return "delete";
     } else if (action.insert != null) {
-      if (lastEdit.type === "delete") {
+      if (lastEdit && lastEdit.type === "delete") {
         if (lastEdit.retain === action.retain) {
           if (lastEdit.length === action.insert.length) {
-            return "replace";
+            if (lastEdit.from !== action.insert) {
+              return "replace";
+            } else {
+              return null;
+            }
           }
-        } else if (lastEdit.text === (action.insert || action.delete)) {
+        } else if (lastEdit.from === action.insert) {
           return "move";
         }
       }
@@ -273,15 +279,16 @@ const Editor = ({
     return null;
   };
 
-  const parseDelta = (delta, lastEdit) => {
+  const parseDelta = (delta, lastEdit, editedText) => {
     const action = opsToAction(delta.ops);
     var edit = {};
     edit.index = action.retain;
     edit.len = action.len;
-    edit.text = action.insert || action.delete;
+    edit.sourceText = prevEditorText;
+    edit.from = action.delete && prevEditorText.slice(edit.index, edit.index + edit.len);
+    edit.to = action.insert || "";
+    edit.editedText = editedText;
     edit.type = getEditType(action, lastEdit);
-    edit.prefix = prevEditorText.slice(0, edit.index);
-    edit.suffix = prevEditorText.slice(edit.index + edit.len, prevEditorText.length);
     return edit;
   };
 
@@ -310,19 +317,31 @@ const Editor = ({
         clearTimeout(editTimer);
       };
       const lastEdit = edits[edits.length - 1];
-      const edit = parseDelta(delta, lastEdit);
+      const edit = parseDelta(delta, lastEdit, editor.getText());
       var newEdits = edits;
       if (edit.type === "move" || edit.type === "replace") {
+        edit.sourceText = lastEdit.sourceText;
+        edit.from = lastEdit.from;
         newEdits.pop();
       } else if (lastEdit && lastEdit.type === "insert") {
         newEdits.pop();
       }
       newEdits = [...newEdits, edit];
       setEdits(newEdits);
-      setEditTimer(setTimeout(() => {
-        setSmartEdits(suggestEdits(newEdits));
-        setEditTimer(null);
-      }, 1000));
+      const filteredEdits = newEdits.filter(edit => edit.type === "move").slice(-3);
+      if (filteredEdits.length > 0) {
+        setEditTimer(setTimeout(() => {
+          const filteredEdits = newEdits.filter(edit => edit.type === "move").slice(-3);
+          var newSummarizedEdits = summarizedEdits;
+          filteredEdits.filter(edit => !summarizedEdits.includes(edit)).forEach(edit => summarizeEdit(edit).then((summary) => {
+            edit.summary = summary;
+            newSummarizedEdits.push(edit);
+          }));
+          setSummarizedEdits(newSummarizedEdits);
+          suggestEdit(editor.getText(), newSummarizedEdits.slice(-3)).then((suggestedEdit) => setSmartEdit(suggestedEdit));
+          setEditTimer(null);
+        }, 3000));
+      };
     }
     setPrevEditorText(editor.getText());
     setFormattedValue(value);

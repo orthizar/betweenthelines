@@ -164,18 +164,38 @@ Text: ${text}
 Commands: ${formattedMessages}`.trim();
 };
 
-const suggestEditsPrompt = (text, edits) => {
-  const formattedEdits = "TODO";
+export const suggestEditPrompt = (text, edits) => {
+  const formattedEdits = "[" + edits.join(";") + "]";
   return `
 Suggest edits to the text that are in line with the previous edits from the user.
+Do not repeat previous edits, when not necessary.
+Only suggest edits that are relevant for the text and can be applied to the text.
+Only suggest edits to the structure of the text, not to the content of the text.
+Formulate the edit imperatively.
 Use the following format:
 
-Text: the source text you want to edit
-Edits: the previous edits that were applied to the text, wrapped in square brackets
-Edit: the suggested edit
+Text: the text you want to suggest edits for
+Edits: the previous edits that were applied to the text, wrapped in square brackets, separated by semicolons
+Edit: the suggested edit based on the previous edits and the text in full text and imperative form
 Edited Text: the text after applying the suggested edit
 
 Begin! Remember to use the correct format.
 Text: ${text}
 Edits: ${formattedEdits}`.trim();
 };
+
+export const summarizeEditPrompt = (edit) => {
+  return `
+Summarize the edit. Focus on structure changes and movements of sentences, not any other changes.
+Name specifics, not generalities (which sentence was moved where?, etc.).
+Use the following format:
+
+Source Text: the text before the edit
+Edited Text: the text after the edit
+Summary: a summary of the edit in max 30 words
+
+Begin! Remember to use the correct format.
+Source Text: ${edit.sourceText.trim()}
+Edited Text: ${edit.editedText.trim()}
+`.trim();
+}
