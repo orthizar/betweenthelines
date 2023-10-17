@@ -27,17 +27,19 @@ Image Web: ${imageAnnotations.web ? "[" + imageAnnotations.web.join(",") + "]" :
 Image Objects: ${imageAnnotations.objects ? "[" + imageAnnotations.objects.join(",") + "]" : "No objects found."}
 `.trim() : "";
   return `
-Transform the text according to the transformation command.
 Use the following format:
-
+"""
 Text: the source text you want to transform ${imageAnnotations ? "\n" + imageInstructions : ""}
 Layout: the layout the text should be in
 Transformation: the transformations you should do to the source text. Do not make any changes that are not asked for.
 Thought: you should always think about what to do
 Output: the transformed text in the correct layout. Do not include part titles (e.g. "Opening", "Content", "Closing", "Signature") or any other information that is not part of the text.
 Observation: Describe what you did in max 15 words
+"""
 
+You are an email writing assistant. Transform the text according to the transformation command.
 Begin! Remember to use the correct format.
+"""
 Text: ${text} ${imageAnnotations ? "\n" + formattedImageAnnotations : ""}
 Layout: ${formatInstrucions[format]}
 Transformation: ${transformationCommand}`.trim();
