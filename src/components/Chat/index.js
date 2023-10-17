@@ -201,7 +201,8 @@ const Chat = ({
           }}
           disabled={chatInputDisabled || suggestion === null}
         >
-          <BsStars /> {suggestion !== null ? suggestion : "Please wait..."}
+          <BsStars className="flex-shrink-0 mr-2"
+          /> {suggestion !== null ? suggestion : "Please wait..."}
         </button>
         <textarea
           ref={chatInputRef}
