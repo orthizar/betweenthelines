@@ -168,15 +168,13 @@ export const suggestEditPrompt = (text, edits) => {
   const formattedEdits = "[" + edits.join(";") + "]";
   return `
 Suggest edits to the text that are in line with the previous edits from the user.
-Do not repeat previous edits, when not necessary.
-Only suggest edits that are relevant for the text and can be applied to the text.
-Only suggest edits to the structure of the text, not to the content of the text.
+Only suggest edits to the structure of the text, not to the content of the text (no spelling, no grammar, no formatting, etc.).
 Formulate the edit imperatively.
 Use the following format:
 
 Text: the text you want to suggest edits for
 Edits: the previous edits that were applied to the text, wrapped in square brackets, separated by semicolons
-Edit: the suggested edit based on the previous edits and the text in full text and imperative form
+Edit: the suggested edit to the structure of the text based on the previous edits in imperative form
 Edited Text: the text after applying the suggested edit
 
 Begin! Remember to use the correct format.

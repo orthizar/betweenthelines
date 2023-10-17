@@ -393,7 +393,6 @@ const Editor = ({
   };
 
   // Editor configuration
-
   const editorModules = {
     toolbar: null,
   };
@@ -431,6 +430,14 @@ const Editor = ({
                 {correction}
               </button>
             ))}
+          {workingSource === null && editorCorrections.length === 0 && smartEdit !== null && (
+            <button
+              key={smartEdit.edit}
+              className={`text-black rounded text-sm w-full  "bg-white"`}
+            >
+              {smartEdit.edit}
+            </button>
+          )}
         </div>
       )}
       <div className="mb-6 h-full w-full overflow-auto">
