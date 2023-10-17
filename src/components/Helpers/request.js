@@ -11,6 +11,7 @@ export const invokeLLM = async (prompt, tokens) => {
         model: "gpt-3.5-turbo-instruct",
         prompt: prompt,
         max_tokens: tokens,
+        temperature: 0.3,
       },
       {
         headers: {
