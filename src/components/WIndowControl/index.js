@@ -45,6 +45,7 @@ const WindowControl = ({
         shouldRefine={shouldRefine}
         workingSource={workingSource}
         setWorkingSource={setWorkingSource}
+        setActiveVersion={setActiveVersion}
       />
     )) ||
     (activeMenuItem === HISTORY_LABEL && (

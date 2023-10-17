@@ -1,6 +1,5 @@
-import { createVersion, getIndexFromLatestVersion } from "../Helpers/versions";
-
 import React from "react";
+import { createVersion } from "../Helpers/versions";
 import { invokePipeline } from "../Helpers/refine";
 
 const buttons = [
@@ -59,14 +58,21 @@ const ButtonGroup = ({
           .replace(/(?:\r\n|\r|\n|\\n)/g, "\n")
           .trim()
           .replace(/\n/g, "<br>");
-        createVersion(transformed.observation, getPlainText(), newText);
+
+        const newVersion = createVersion(
+          transformed.observation,
+          getPlainText(),
+          newText
+        );
+
+        setActiveVersion(newVersion);
         setTextWithHtml(newText);
         setWorkingSource(null);
         return;
       }
     }
     setWorkingSource(null);
-    setActiveVersion(getIndexFromLatestVersion() + 2);
+    // setActiveVersion(getIndexFromLatestVersion() + 2);
   };
 
   return (

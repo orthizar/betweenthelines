@@ -1,7 +1,9 @@
-import React, { useState, useRef, useEffect } from "react";
-import { annotateImage } from "../Helpers/image";
-import { BsStars } from "react-icons/bs";
+import React, { useEffect, useRef, useState } from "react";
+
 import { BiImageAdd } from "react-icons/bi";
+import { BsStars } from "react-icons/bs";
+import { annotateImage } from "../Helpers/image";
+import { createVersion } from "../Helpers/versions";
 import { invokePipeline } from "../Helpers/refine";
 import { suggest } from "../Helpers/learn";
 import { useCallback } from "react";
@@ -14,7 +16,6 @@ const setSessionData = (name, value) => {
   }
 };
 
-
 const Chat = ({
   getPlainText,
   setTextWithHtml,
@@ -22,6 +23,7 @@ const Chat = ({
   shouldRefine,
   workingSource,
   setWorkingSource,
+  setActiveVersion,
 }) => {
   const chatContainerRef = useRef(null);
   const chatInputRef = useRef(null);
@@ -79,8 +81,6 @@ const Chat = ({
         ];
       }
 
-      
-
       setMessage("");
       setImage(null);
       setImageAnnotations(null);
@@ -110,6 +110,12 @@ const Chat = ({
             .trim()
             .replace(/\n/g, "<br>");
           setTextWithHtml(value);
+          const newActiveVersion = createVersion(
+            message,
+            getPlainText(),
+            value
+          );
+          setActiveVersion(newActiveVersion);
           setChatInputDisabled(false);
           setWorkingSource(null);
           setSuggestion(null);
@@ -166,14 +172,16 @@ const Chat = ({
           {chatMessages.map((chatMessage) => (
             <div
               key={chatMessage.id}
-              className={`flex flex-col mb-3 ${isMyMessage(chatMessage.author) ? "items-end" : "items-start"
-                }`}
+              className={`flex flex-col mb-3 ${
+                isMyMessage(chatMessage.author) ? "items-end" : "items-start"
+              }`}
             >
               <div
-                className={`text-xs mb-1 ${isMyMessage(chatMessage.author)
-                  ? "text-gray-600 mr-1"
-                  : "text-gray-600 ml-1"
-                  }`}
+                className={`text-xs mb-1 ${
+                  isMyMessage(chatMessage.author)
+                    ? "text-gray-600 mr-1"
+                    : "text-gray-600 ml-1"
+                }`}
               >
                 {!isMyMessage(chatMessage.author) && (
                   <div className="text-xs mb-1 text-gray-600">
@@ -181,10 +189,22 @@ const Chat = ({
                   </div>
                 )}
               </div>
-              <div className={'max-w-[15rem]'}>
-                <div className={`relative p-3 rounded-lg ${isMyMessage(chatMessage.author) ? "bg-blue-200 text-right mr-1" : "bg-gray-200 ml-1"}`}>
+              <div className={"max-w-[15rem]"}>
+                <div
+                  className={`relative p-3 rounded-lg ${
+                    isMyMessage(chatMessage.author)
+                      ? "bg-blue-200 text-right mr-1"
+                      : "bg-gray-200 ml-1"
+                  }`}
+                >
                   {chatMessage.text && <p>{chatMessage.text}</p>}
-                  {chatMessage.image && <img src={chatMessage.image} alt="Uploaded content" className="max-w-full max-h-40" />}
+                  {chatMessage.image && (
+                    <img
+                      src={chatMessage.image}
+                      alt="Uploaded content"
+                      className="max-w-full max-h-40"
+                    />
+                  )}
                 </div>
               </div>
             </div>
@@ -226,9 +246,7 @@ const Chat = ({
             className="mb-2 hidden"
           ></input>
           <label htmlFor="image-input">
-            <div
-              className="bg-blue-500 h-10 w-10 p-1 text-white rounded flex items-center justify-center cursor-pointer"
-            >
+            <div className="bg-blue-500 h-10 w-10 p-1 text-white rounded flex items-center justify-center cursor-pointer">
               {image ? (
                 <img
                   src={image}
@@ -236,9 +254,7 @@ const Chat = ({
                   className="max-w-full max-h-full"
                 />
               ) : (
-                <BiImageAdd
-                  className="text-lg text-white cursor-pointer"
-                />
+                <BiImageAdd className="text-lg text-white cursor-pointer" />
               )}
             </div>
           </label>
