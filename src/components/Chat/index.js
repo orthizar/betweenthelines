@@ -166,9 +166,9 @@ const Chat = ({
   }, [chatMessages, suggestion, getPlainTextCallback]);
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex-grow overflow-y-auto" ref={chatContainerRef}>
-        <div className="mb-6 overflow-y-auto px-4">
+    <div className="flex flex-col h-full justify-between">
+      <div className="overflow-y-auto" ref={chatContainerRef}>
+        <div className="overflow-y-auto px-4 h-80">
           {chatMessages.map((chatMessage) => (
             <div
               key={chatMessage.id}
@@ -211,7 +211,7 @@ const Chat = ({
           ))}
         </div>
       </div>
-      <div className="flex-grow mb-12">
+      <div className="">
         <button
           className="text-xs w-full p-1 border rounded-md text-left text-gray mb-2 flex items-center"
           onClick={() => {
@@ -221,8 +221,8 @@ const Chat = ({
           }}
           disabled={chatInputDisabled || suggestion === null}
         >
-          <BsStars className="flex-shrink-0 mr-2"
-          /> {suggestion !== null ? suggestion : "Please wait..."}
+          <BsStars className="flex-shrink-0 mr-2" />{" "}
+          {suggestion !== null ? suggestion : "Please wait..."}
         </button>
         <textarea
           ref={chatInputRef}
@@ -237,7 +237,7 @@ const Chat = ({
           rows="2"
           maxLength={280}
         ></textarea>
-        <div className="flex justify-between mb-2 gap-1">
+        <div className="flex justify-between gap-1">
           <input
             type="file"
             id="image-input"
