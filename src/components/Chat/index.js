@@ -167,8 +167,8 @@ const Chat = ({
 
   return (
     <div className="flex flex-col h-full justify-between">
-      <div className="overflow-y-auto" ref={chatContainerRef}>
-        <div className="overflow-y-auto px-4 h-80">
+      <div className="overflow-y-auto max-h-80" ref={chatContainerRef}>
+        <div className="overflow-y-auto px-4">
           {chatMessages.map((chatMessage) => (
             <div
               key={chatMessage.id}
