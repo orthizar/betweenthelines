@@ -234,6 +234,7 @@ const Editor = ({
 
   const handleCorrectionClick = (event, correction) => {
     event.preventDefault();
+    unpreviewCorrection();
     applyCorrection(correction);
   };
 
