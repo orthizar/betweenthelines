@@ -1,5 +1,6 @@
 import React, { useLayoutEffect, useState } from "react";
 
+import BackgroundAnimation from "../BackgroundAnimation";
 import ButtonGroup from "../ButtonGroup";
 import Editor from "../Editor";
 import Utilities from "../Utilities";
@@ -116,21 +117,7 @@ const ChatGPT = () => {
           </div>
         </div>
       </div>
-
-      <div className="area">
-        <ul className="circles">
-          <li></li>
-          <li></li>
-          <li></li>
-          <li></li>
-          <li></li>
-          <li></li>
-          <li></li>
-          <li></li>
-          <li></li>
-          <li></li>
-        </ul>
-      </div>
+      <BackgroundAnimation />
     </div>
   );
 };
