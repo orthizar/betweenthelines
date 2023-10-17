@@ -174,7 +174,7 @@ Use the following format:
 
 Text: the text you want to suggest edits for
 Edits: the previous edits that were applied to the text, wrapped in square brackets, separated by semicolons
-Edit: the suggested edit to the structure of the text based on the previous edits in imperative form
+Edit: the suggested edit to the structure of the text based on the previous edits in imperative form. Describe what edit you are going to make.
 Edited Text: the text after applying the suggested edit
 
 Begin! Remember to use the correct format.
