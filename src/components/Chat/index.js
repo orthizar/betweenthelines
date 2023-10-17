@@ -211,8 +211,7 @@ const Chat = ({
           ))}
         </div>
       </div>
-
-      <div className="flex-grow">
+      <div className="flex-grow mb-12">
         <button
           className="text-xs w-full p-1 border rounded-md text-left text-gray mb-2 flex items-center"
           onClick={() => {
@@ -222,7 +221,8 @@ const Chat = ({
           }}
           disabled={chatInputDisabled || suggestion === null}
         >
-          <BsStars /> {suggestion !== null ? suggestion : "Please wait..."}
+          <BsStars className="flex-shrink-0 mr-2"
+          /> {suggestion !== null ? suggestion : "Please wait..."}
         </button>
         <textarea
           ref={chatInputRef}

@@ -141,7 +141,7 @@ Layout: ${formatInstrucions[format]}
 Information: ${formattedQuestions}`.trim();
 };
 
-export const suggestPrompt = (text, messages) => {
+export const suggestPrompt = (text, messages, format) => {
   const formattedMessages =
     messages.length > 0
       ? messages.length === 1
@@ -151,12 +151,13 @@ export const suggestPrompt = (text, messages) => {
   return `
 Suggest ways to improve the text. Formulate the suggestion as a command.
 Do not repeat previous commands, when not necessary.
-Only suggest commands that are relevant for the text and can be applied to the text via GPT-3.5.
+Only suggest commands that are relevant for the text and can be applied to the text.
+If text is empty, suggest a command to generate a ${format} template.
 Use the following format:
 
 Text: the source text you want to predict the next command for.
 Commands: the previous commands that were applied to the text, wrapped in square brackets.
-Command: the predicted command.
+Command: the suggested command.
 
 Begin! Remember to use the correct format.
 Text: ${text}
