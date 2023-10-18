@@ -1,60 +1,56 @@
-# Between the lines
+# BetweenTheLines
 
 > Enhancing communication within email threads.
 
+![Logo](docs/assets/logo_full.png)
+
 ## Features
 
-- **Chat function:** Chat interface that enables you to specify which sections of the email you'd like to improve or have written by the LLM.
+- **Chat** to edit the email in a dialog
+- **Spellchecking** detects misspellings in realtime
+- **History** stores major changes to the text
+- **Quick edits** to quickly improve or change the formality of the email
 
-- **Misspelling Correction:** Automatically detects and highlights misspellings as you type and provides suggestions for correction.
-
-- **History:** Stores your prompts and major changes in History.
-
-- **Improve:** This feature is used to discuss ways to enhance the quality of communication or collaboration within the email thread.
-
-- **Professional:** It refers to maintaining a high standard of etiquette, clarity, and correctness in your email correspondence.
-
-- **Colloquially:** This option acknowledges a more informal or conversational style of communication.
-
-- **Persuasive:** With this feature, you can craft messages that effectively convince or influence the recipient.
-
-- **Copy:** Copies the displayed text.
-
-- **Delete:** Deletes the displayed text.
-
-## Technology
+## Tech Stack
 
 - React JavaScript
+- TailwindCSS
 - Nspell
-- Tailwind Framework
-- Firebase
 - OpenAI
-- HTML & CSS
 
-## Planned Improvements
+## Installation
 
-- Generate emails with predefined content.
-- Upgrade the application's design.
-- Host the application on a platform of your choice.
+```bash
+  git clone https://github.com/orthizar/betweenthelines.git
+```
 
-## Usage
+```bash
+  cd betweenthelines
+```
 
-Visit the [web application](https://betweenthelines-55a80.web.app/) to see the web application in action.
+```bash
+  npm install
+```
 
-## Getting Started
+## Authors
 
-To run this project locally, follow these steps:
+- [@orthizar](https://github.com/orthizar)
+- [@lcmoc](https://github.com/lcmoc)
+- [@Jahoo445](https://github.com/Jahoo445)
+- [@SupremeWaller007](https://github.com/SupremeWaller007)
+- [@kirthi-exe](https://github.com/kirthi-exe)
 
-1. Clone this repository to your local machine:
-`git clone https://github.com/orthizar/betweenthelines.git`
+## Acknowledgements
 
-2. Navigate to the project directory:
-`cd betweenthelines`
+- [Prompt Engineering Guide](https://learnprompting.org/)
+- [LangChain Prompts](https://python.langchain.com/docs/modules/agents/how_to/custom_llm_agent)
 
-3. Install the project dependencies:
-`npm install`
+## Contributing
 
-4. Start the development server:
-`npm start`
+We welcome contributions from the community! To contribute to BetweenTheLines, follow these steps:
 
-5. Open your web browser and visit http://localhost:3000 to view the project.
+1. Fork the repository
+2. Create a new branch for your feature or bug fix
+3. Make your changes and commit them
+4. Push your changes to your fork
+5. Submit a pull request to the main repository
