@@ -50,6 +50,7 @@ const ChatGPT = () => {
 
   return (
     <div className="bg-gray-100 min-h-screen flex flex-col md:flex-row items-center justify-center">
+      <img src="logo_transparent.png" alt="Logo" className="fixed top-0 left-0 z-50 h-7 m-1" />
       <div className="fixed top-4 left-5/9 flex mb-4 md:hidden">
         <button
           className={`px-4 py-2 ${
