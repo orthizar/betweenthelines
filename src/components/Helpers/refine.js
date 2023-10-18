@@ -37,7 +37,7 @@ export async function* invokePipeline(text, imageDescription, transformationComm
           yield await Promise.resolve(transformed.observation);
           step++;
         }
-        if (!refine || text === "") {
+        if (!refine || text.trim() === "") {
           step = 15;
         }
         if (step === 1) {
@@ -165,6 +165,11 @@ export async function* invokePipeline(text, imageDescription, transformationComm
   }
 }
 
+const cleanText = (text) => {
+  const removeRegex = /(Opening|Closing|Content|Subject|Signature):/is;
+  return text.replace(removeRegex, "").trim();
+};
+
 const transformText = async (text, imageAnnotations, transformationCommand, format) => {
   const prompt = transformTextPrompt(text, imageAnnotations, transformationCommand, format);
   const transformedText = await invokeLLM(prompt, getMaxTokens(prompt));
@@ -173,7 +178,7 @@ const transformText = async (text, imageAnnotations, transformationCommand, form
   );
   const transformed = {
     thought: parsedOutput[1].trim(),
-    output: parsedOutput[2].trim(),
+    output: cleanText(parsedOutput[2]),
     observation: parsedOutput[3].trim(),
   };
   return transformed;
@@ -248,7 +253,7 @@ const enrichText = async (
   );
   const enriched = {
     thought: parsedOutput[1].trim(),
-    output: parsedOutput[2].trim(),
+    output: cleanText(parsedOutput[2]),
     observation: parsedOutput[3].trim(),
   };
   return enriched;
