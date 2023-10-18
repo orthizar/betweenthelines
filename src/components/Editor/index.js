@@ -5,6 +5,8 @@ import React, { useState } from "react";
 import ReactQuill from "react-quill";
 import nspell from "nspell";
 
+import { suggestEdit, summarizeEdit } from "../Helpers/edits";
+
 var lang = "en_US";
 const aff = await fetch(`dictionaries/${lang}/${lang}.aff`).then((r) =>
   r.text()
@@ -37,8 +39,14 @@ const Editor = ({
   const [selectedCorrection, setSelectedCorrection] = useState(null);
   const [currentPreviewCorrection, setCurrentPreviewCorrection] =
     useState(null);
-
+  const [edits, setEdits] = useState([]);
+  const [prevEditorText, setPrevEditorText] = useState("");
+  const [editTimer, setEditTimer] = useState(null);
+  const [smartEdit, setSmartEdit] = useState(null);
+  const [summarizedEdits, setSummarizedEdits] = useState([]);
+  const [currentPreviewEdit, setCurrentPreviewEdit] = useState(null);
   // Mistake checking
+
   const getMistakes = (text) => {
     const words = text.split(/[\n\s]/);
     var index = 0;
@@ -219,6 +227,110 @@ const Editor = ({
       setCurrentPreviewCorrection(null);
     }
   };
+
+  // Edits
+
+  const opsToAction = (ops) => {
+    var action = {
+      retain: 0,
+      insert: null,
+      delete: null,
+      len: 0,
+    };
+    ops.forEach((op) => {
+      if (op.retain != null) {
+        action.retain = op.retain;
+      } else if (op.insert != null) {
+        action.len = op.insert.length;
+        action.insert = op.insert;
+      } else if (op.delete != null) {
+        action.len = op.delete;
+        action.delete = prevEditorText.slice(action.retain, action.retain + action.len);
+        console.log(prevEditorText.slice(action.retain, action.retain + action.len));
+      }
+    });
+    return action;
+  };
+
+  const getEditType = (action, lastEdit) => {
+    // a delete followed by an insert at the same index is a move, except if the insert is not the same as the delete, then it's a replace
+    // a delete followed by anything at a different index is a delete
+    // an insert followed by anything at a different index is an insert
+    // we do not care about formatting changes and insertions that are not moves or replaces
+    console.log("action", action);
+    console.log("lastEdit", lastEdit);
+    if (action.delete != null) {
+      return "delete";
+    } else if (action.insert != null) {
+      if (lastEdit && lastEdit.type === "delete") {
+        if (lastEdit.retain === action.retain) {
+          if (lastEdit.length === action.insert.length) {
+            if (lastEdit.from !== action.insert) {
+              return "replace";
+            } else {
+              return null;
+            }
+          }
+        } else if (lastEdit.from === action.insert) {
+          return "move";
+        }
+      }
+      return "insert";
+    };
+    return null;
+  };
+
+  const parseDelta = (delta, lastEdit, editedText) => {
+    const action = opsToAction(delta.ops);
+    var edit = {};
+    edit.index = action.retain;
+    edit.len = action.len;
+    edit.sourceText = prevEditorText;
+    edit.from = action.delete && prevEditorText.slice(edit.index, edit.index + edit.len);
+    edit.to = action.insert || "";
+    edit.editedText = editedText;
+    edit.type = getEditType(action, lastEdit);
+    return edit;
+  };
+
+  const triggerEditSuggestion = (newEdits) => {
+    const filteredEdits = newEdits.filter(edit => edit.type === "move").slice(-3);
+    var newSummarizedEdits = summarizedEdits;
+    filteredEdits.filter(edit => !summarizedEdits.includes(edit)).forEach(edit => summarizeEdit(edit).then((summary) => {
+      edit.summary = summary;
+      newSummarizedEdits.push(edit);
+    }));
+    setSummarizedEdits(newSummarizedEdits);
+    suggestEdit(editorRef.current.editor.getText(), newSummarizedEdits.slice(-3)).then((suggestedEdit) => setSmartEdit(suggestedEdit));
+    setEditTimer(null);
+  };
+
+  const previewEdit = (edit) => {
+    const text = editorRef.current.editor.getText();
+    const newText = edit.editedText;
+    edit.sourceText = text;
+    editorRef.current.editor.setText(newText, "silent");
+    editorRef.current.editor.formatText(0, text.length, { background: "lightgreen" });
+    setCurrentPreviewEdit(edit);
+  };
+
+  const unpreviewEdit = () => {
+    if (currentPreviewEdit != null) {
+      const edit = currentPreviewEdit;
+      editorRef.current.editor.setText(edit.sourceText, "silent");
+      editorRef.current.editor.removeFormat(0, edit.sourceText.length);
+      setCurrentPreviewEdit(null);
+    }
+  };
+
+  const applySmartEdit = (smartEdit) => {
+    smartEdit.sourceText = editorRef.current.editor.getText();
+    editorRef.current.editor.setText(smartEdit.editedText, "silent");
+    setEdits([...edits, smartEdit]);
+    setSmartEdit(null);
+    triggerEditSuggestion([...edits, smartEdit]);
+  };
+
   // Event handlers
 
   const handleSelectionChange = (selection) => {
@@ -238,8 +350,36 @@ const Editor = ({
     applyCorrection(correction);
   };
 
+  const handleSmartEditClick = (event, smartEdit) => {
+    event.preventDefault();
+    unpreviewEdit();
+    applySmartEdit(smartEdit);
+  };
+
   const handleEditorChange = (value, delta, source, editor) => {
+    setPrevEditorText(editor.getText());
     setFormattedValue(value);
+    if (source === "user" && isDesktop) {
+      if (editTimer !== null) {
+        clearTimeout(editTimer);
+      };
+      const lastEdit = edits[edits.length - 1];
+      const edit = parseDelta(delta, lastEdit, editor.getText());
+      var newEdits = edits;
+      if (edit.type === "move" || edit.type === "replace") {
+        edit.sourceText = lastEdit.sourceText;
+        edit.from = lastEdit.from;
+        newEdits.pop();
+      } else if (lastEdit && lastEdit.type === "insert") {
+        newEdits.pop();
+      }
+      newEdits = [...newEdits, edit];
+      setEdits(newEdits);
+      const filteredEdits = newEdits.filter(edit => edit.type === "move").slice(-3);
+      if (filteredEdits.length > 0) {
+        setEditTimer(setTimeout(() => triggerEditSuggestion(newEdits), 3000));
+      };
+    }
     if ((source === "user" || source === "api") && isDesktop) {
       const mistakes = getMistakes(editor.getText());
       setSpellCheckMistakes(mistakes);
@@ -265,9 +405,9 @@ const Editor = ({
       navigateCorrections();
       previewCorrection(
         editorCorrections[
-          selectedCorrection == null
-            ? 0
-            : (selectedCorrection + 1) % editorCorrections.length
+        selectedCorrection == null
+          ? 0
+          : (selectedCorrection + 1) % editorCorrections.length
         ]
       );
     }
@@ -288,7 +428,6 @@ const Editor = ({
   };
 
   // Editor configuration
-
   const editorModules = {
     toolbar: null,
   };
@@ -320,13 +459,23 @@ const Editor = ({
                 onClick={(event) => handleCorrectionClick(event, correction)}
                 onMouseEnter={() => previewCorrection(correction)}
                 onMouseLeave={() => unpreviewCorrection(correction)}
-                className={`text-black rounded text-sm w-1/5 ${
-                  selectedCorrection === index ? "bg-gray-200" : "bg-white"
-                }`}
+                className={`text-black rounded text-sm w-1/5 ${selectedCorrection === index ? "bg-gray-200" : "bg-white"
+                  }`}
               >
                 {correction}
               </button>
             ))}
+          {workingSource === null && editorCorrections.length === 0 && smartEdit !== null && (
+            <button
+              key={smartEdit.summary}
+              onClick={event => handleSmartEditClick(event, smartEdit)}
+              onMouseEnter={() => previewEdit(smartEdit)}
+              onMouseLeave={() => unpreviewEdit()}
+              className={`text-black rounded text-sm w-full h-10 "bg-white"`}
+            >
+              {smartEdit.summary}
+            </button>
+          )}
         </div>
       )}
       <div className="mb-6 h-full w-full overflow-auto">
