@@ -44,6 +44,7 @@ const Editor = ({
   const [editTimer, setEditTimer] = useState(null);
   const [smartEdit, setSmartEdit] = useState(null);
   const [summarizedEdits, setSummarizedEdits] = useState([]);
+  const [currentPreviewEdit, setCurrentPreviewEdit] = useState(null);
   // Mistake checking
 
   const getMistakes = (text) => {
@@ -292,6 +293,44 @@ const Editor = ({
     return edit;
   };
 
+  const triggerEditSuggestion = (newEdits) => {
+    const filteredEdits = newEdits.filter(edit => edit.type === "move").slice(-3);
+    var newSummarizedEdits = summarizedEdits;
+    filteredEdits.filter(edit => !summarizedEdits.includes(edit)).forEach(edit => summarizeEdit(edit).then((summary) => {
+      edit.summary = summary;
+      newSummarizedEdits.push(edit);
+    }));
+    setSummarizedEdits(newSummarizedEdits);
+    suggestEdit(editorRef.current.editor.getText(), newSummarizedEdits.slice(-3)).then((suggestedEdit) => setSmartEdit(suggestedEdit));
+    setEditTimer(null);
+  };
+
+  const previewEdit = (edit) => {
+    const text = editorRef.current.editor.getText();
+    const newText = edit.editedText;
+    edit.sourceText = text;
+    editorRef.current.editor.setText(newText, "silent");
+    editorRef.current.editor.formatText(0, text.length, { background: "lightgreen" });
+    setCurrentPreviewEdit(edit);
+  };
+
+  const unpreviewEdit = () => {
+    if (currentPreviewEdit != null) {
+      const edit = currentPreviewEdit;
+      editorRef.current.editor.setText(edit.sourceText, "silent");
+      editorRef.current.editor.removeFormat(0, edit.sourceText.length);
+      setCurrentPreviewEdit(null);
+    }
+  };
+
+  const applySmartEdit = (smartEdit) => {
+    smartEdit.sourceText = editorRef.current.editor.getText();
+    editorRef.current.editor.setText(smartEdit.editedText, "silent");
+    setEdits([...edits, smartEdit]);
+    setSmartEdit(null);
+    triggerEditSuggestion([...edits, smartEdit]);
+  };
+
   // Event handlers
 
   const handleSelectionChange = (selection) => {
@@ -313,13 +352,14 @@ const Editor = ({
 
   const handleSmartEditClick = (event, smartEdit) => {
     event.preventDefault();
-    editorRef.current.editor.setText(smartEdit.editedText, "silent");
-    setEdits((prevEdits) => [...prevEdits, smartEdit]);
-    setSmartEdit(null);
+    unpreviewEdit();
+    applySmartEdit(smartEdit);
   };
 
   const handleEditorChange = (value, delta, source, editor) => {
-    if (source === "user") {
+    setPrevEditorText(editor.getText());
+    setFormattedValue(value);
+    if (source === "user" && isDesktop) {
       if (editTimer !== null) {
         clearTimeout(editTimer);
       };
@@ -337,21 +377,9 @@ const Editor = ({
       setEdits(newEdits);
       const filteredEdits = newEdits.filter(edit => edit.type === "move").slice(-3);
       if (filteredEdits.length > 0) {
-        setEditTimer(setTimeout(() => {
-          const filteredEdits = newEdits.filter(edit => edit.type === "move").slice(-3);
-          var newSummarizedEdits = summarizedEdits;
-          filteredEdits.filter(edit => !summarizedEdits.includes(edit)).forEach(edit => summarizeEdit(edit).then((summary) => {
-            edit.summary = summary;
-            newSummarizedEdits.push(edit);
-          }));
-          setSummarizedEdits(newSummarizedEdits);
-          suggestEdit(editor.getText(), newSummarizedEdits.slice(-3)).then((suggestedEdit) => setSmartEdit(suggestedEdit));
-          setEditTimer(null);
-        }, 3000));
+        setEditTimer(setTimeout(() => triggerEditSuggestion(newEdits), 3000));
       };
     }
-    setPrevEditorText(editor.getText());
-    setFormattedValue(value);
     if ((source === "user" || source === "api") && isDesktop) {
       const mistakes = getMistakes(editor.getText());
       setSpellCheckMistakes(mistakes);
@@ -441,6 +469,8 @@ const Editor = ({
             <button
               key={smartEdit.summary}
               onClick={event => handleSmartEditClick(event, smartEdit)}
+              onMouseEnter={() => previewEdit(smartEdit)}
+              onMouseLeave={() => unpreviewEdit()}
               className={`text-black rounded text-sm w-full h-10 "bg-white"`}
             >
               {smartEdit.summary}

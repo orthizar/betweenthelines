@@ -169,32 +169,34 @@ Commands: ${formattedMessages}`.trim();
 export const suggestEditPrompt = (text, edits) => {
   const formattedEdits = "[" + edits.join(";") + "]";
   return `
-Suggest edits to the text that are in line with the previous edits from the user.
-Only suggest edits to the structure of the text, not to the content of the text (no spelling, no grammar, no formatting, etc.).
-Formulate the edit imperatively.
 Use the following format:
-
+"""
 Text: the text you want to suggest edits for
 Edits: the previous edits that were applied to the text, wrapped in square brackets, separated by semicolons
-Edit: the suggested edit to the structure of the text based on the previous edits in imperative form. Describe what edit you are going to make.
+Edit: the suggested edit to the structure of the text based on the previous edits in imperative form.
 Edited Text: the text after applying the suggested edit
+"""
 
+You are an structure editor. Suggest one edit to the structure of the text based on the previous movements.
+Formulate the edit imperatively.
 Begin! Remember to use the correct format.
+"""
 Text: ${text}
 Edits: ${formattedEdits}`.trim();
 };
 
 export const summarizeEditPrompt = (edit) => {
   return `
-Summarize the edit. Focus on structure changes and movements of sentences, not any other changes.
-Name specifics, not generalities (which sentence was moved where?, etc.).
 Use the following format:
-
+"""
 Source Text: the text before the edit
 Edited Text: the text after the edit
-Summary: a summary of the edit in max 30 words
+Summary: a summary of the structural changes in the edit in max 30 words
+"""
 
+You are a summarizer. Summarize the structural changes in the edit in max 30 words.
 Begin! Remember to use the correct format.
+"""
 Source Text: ${edit.sourceText.trim()}
 Edited Text: ${edit.editedText.trim()}
 `.trim();
