@@ -1,7 +1,6 @@
 import React, { useLayoutEffect, useState } from "react";
 
 import AnimatedBackground from "../AnimatedBackground";
-import ButtonGroup from "../ButtonGroup";
 import Editor from "../Editor";
 import Utilities from "../Utilities";
 import WindowControl from "../WIndowControl";
@@ -95,17 +94,8 @@ const ChatGPT = () => {
               workingSource={workingSource}
             />
           ) : null}
-          <div className="flex justify-between items-center">
-            {isDesktop ? (
-              <ButtonGroup
-                setActiveVersion={setActiveVersion}
-                setTextWithHtml={setTextWithHtml}
-                getPlainText={getPlainText}
-                shouldRefine={shouldRefine}
-                workingSource={workingSource}
-                setWorkingSource={setWorkingSource}
-              />
-            ) : null}
+          <div className="flex">
+            <div className="flex-grow" />
             {activeTab === "editor" || isDesktop ? (
               <Utilities
                 setTextWithHtml={setTextWithHtml}
