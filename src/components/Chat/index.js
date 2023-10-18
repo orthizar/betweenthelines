@@ -93,16 +93,17 @@ const Chat = ({
         shouldRefine
       )) {
         if (transformed.output === undefined) {
-          const chatResponse = transformed;
-          messages = [
-            ...messages,
-            {
-              id: messages.length + 1,
-              author: "Bot",
-              text: chatResponse,
-            },
-          ];
-          updateChatMessages(messages);
+          if (transformed !== messages[messages.length - 1].text) {
+            messages = [
+              ...messages,
+              {
+                id: messages.length + 1,
+                author: "Bot",
+                text: transformed,
+              },
+            ];
+            updateChatMessages(messages);
+          }
         } else {
           const transformedText = transformed.output;
           const value = transformedText
