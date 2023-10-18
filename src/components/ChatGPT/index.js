@@ -50,7 +50,7 @@ const ChatGPT = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row items-center justify-center">
+   <div className="min-h-screen flex flex-col md:flex-row items-center justify-center">
       <div className="fixed top-4 left-5/9 flex mb-4 md:hidden">
         <button
           className={`px-4 py-2 ${
