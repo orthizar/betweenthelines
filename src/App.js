@@ -1,13 +1,7 @@
 import ChatGPT from "./components/ChatGPT";
 
 const App = () => {
-  return (
-    <div>
-      <div>
-        <ChatGPT />
-      </div>
-    </div>
-  );
+  return <ChatGPT />;
 };
 
 export default App;

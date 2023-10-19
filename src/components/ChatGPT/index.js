@@ -1,5 +1,6 @@
 import React, { useLayoutEffect, useState } from "react";
 
+import AnimatedBackground from "../AnimatedBackground";
 import Editor from "../Editor";
 import Utilities from "../Utilities";
 import WindowControl from "../WIndowControl";
@@ -48,8 +49,7 @@ const ChatGPT = () => {
   };
 
   return (
-    <div className="bg-gray-100 min-h-screen flex flex-col md:flex-row items-center justify-center">
-      <img src="logo_transparent.png" alt="Logo" className="fixed top-0 left-0 z-50 h-9 m-1" />
+   <div className="min-h-screen flex flex-col md:flex-row items-center justify-center">
       <div className="fixed top-4 left-5/9 flex mb-4 md:hidden">
         <button
           className={`px-4 py-2 ${
@@ -107,6 +107,7 @@ const ChatGPT = () => {
           </div>
         </div>
       </div>
+      <AnimatedBackground />
     </div>
   );
 };
