@@ -11,13 +11,17 @@ function flow(p, pos) {
 }
 
 function display(p, pos, vel) {
+  // p.fill(0);
+  // p.square(pos.x-10, pos.y-10, 0.1);
+  // p.noFill();
   p.point(pos.x, pos.y);
+  // p.line(pos.x, pos.y, pos.x + vel.x, pos.y + vel.y);
 }
 
 function update(p, t, pos, vel, seed, w, h) {
 
-  pos.x = mod((pos.x + vel.x), w);
-  pos.y = mod((pos.y + vel.y), h);
+  pos.x = mod((pos.x + 10 + vel.x), w + 20) - 10;
+  pos.y = mod((pos.y + 10 + vel.y), h + 20) - 10;
 
   var r = p5.Vector.fromAngle(p.noise(seed, t) * p.TWO_PI);
   vel.x = r.x;
@@ -38,12 +42,13 @@ class AnimatedBackground extends Component {
       const w = this.canvasRef.current.offsetWidth;
       const h = this.canvasRef.current.offsetHeight;
       let t = 0;
-      let n = 10000;
+      let n = 1000;
+      let step = 0.0001;
       let particles = [];
       p.setup = function () {
         p.createCanvas(w, h);
-        p.stroke(0, 10);
-
+        // p.stroke(0, 87, 146, 30);
+        p.stroke(0, 30);
         for (var i = 0; i < n; i++) {
           particles.push({
             pos: p.createVector(p.random(w), p.random(h)),
@@ -58,7 +63,18 @@ class AnimatedBackground extends Component {
           display(p, prtcl.pos, prtcl.vel);
           update(p, t, prtcl.pos, prtcl.vel, prtcl.seed, w, h);
         });
-        t += 0.01;
+        t += step;
+        if (Math.floor((t/(100*step))*100) % 300 === 0) {
+          p.noiseSeed(p.random(100000));
+          t = 0;
+          // particles.forEach(function (prtcl) {
+          //   prtcl.pos = p.createVector(p.random(w), p.random(h));
+          //   prtcl.vel = p.createVector(0, 0);
+          // });
+        }
+        if (Math.floor((t/(100*step))*100) % 10 === 0) {
+          p.background(255, 1);
+        }
       };
     };
     this.p5 = new p5(sketch, this.canvasRef.current);
@@ -79,7 +95,7 @@ class AnimatedBackground extends Component {
 
   render() {
     return <div
-      className="absolute h-full w-full -z-50"
+      className="bg-gray-100 absolute h-full w-full -z-50"
       ref={this.canvasRef}
     />;
   }
