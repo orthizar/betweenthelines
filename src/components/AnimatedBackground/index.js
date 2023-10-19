@@ -47,10 +47,11 @@ class AnimatedBackground extends Component {
       console.log(n);
       let step = 0.0001;
       let particles = [];
+      let last, current;
       p.setup = function () {
         p.createCanvas(w, h);
-        // p.stroke(0, 87, 146, 30);
-        p.stroke(0, 30);
+        p.stroke(0, 87, 146, 30);
+        // p.stroke(0, 30);
         for (var i = 0; i < n; i++) {
           particles.push({
             pos: p.createVector(p.random(w), p.random(h)),
@@ -61,21 +62,23 @@ class AnimatedBackground extends Component {
       };
 
       p.draw = function () {
+        last = p.get();
+        p.clear();
+        p.background(255, 0);
         particles.forEach(function (prtcl) {
           display(p, prtcl.pos, prtcl.vel);
           update(p, t, prtcl.pos, prtcl.vel, prtcl.seed, w, h);
         });
+        current = p.get();
+        p.background(255, 0);
+        if (last) {
+          p.image(last, 0, 0);
+        }
+        p.image(current, 0, 0);
         t += step;
         if (Math.floor((t/(100*step))*100) % 300 === 0) {
           p.noiseSeed(p.random(100000));
           t = 0;
-          // particles.forEach(function (prtcl) {
-          //   prtcl.pos = p.createVector(p.random(w), p.random(h));
-          //   prtcl.vel = p.createVector(0, 0);
-          // });
-        }
-        if (Math.floor((t/(100*step))*100) % 10 === 0) {
-          p.background(255, 1);
         }
       };
     };
