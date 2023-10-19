@@ -42,7 +42,9 @@ class AnimatedBackground extends Component {
       const w = this.canvasRef.current.offsetWidth;
       const h = this.canvasRef.current.offsetHeight;
       let t = 0;
-      let n = 1000;
+      // number of particles based on screen size
+      let n = Math.floor(Math.sqrt(w * h));
+      console.log(n);
       let step = 0.0001;
       let particles = [];
       p.setup = function () {
