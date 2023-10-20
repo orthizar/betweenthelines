@@ -49,20 +49,20 @@ const ChatGPT = () => {
 
   return (
     <div className="bg-gray-100 min-h-screen flex flex-col md:flex-row items-center justify-center">
-      <img src="logo_transparent.png" alt="Logo" className="fixed top-0 left-0 z-50 h-9 m-1" />
+      {isDesktop && (
+        <img src="logo_transparent.png" alt="Logo" className="fixed top-0 left-0 z-50 h-9 m-1" />
+      )}
       <div className="fixed top-4 left-5/9 flex mb-4 md:hidden">
         <button
-          className={`px-4 py-2 ${
-            activeTab === "tools" ? "bg-blue-500 text-white" : "bg-gray-300"
-          }`}
+          className={`px-4 py-2 ${activeTab === "tools" ? "bg-blue-500 text-white" : "bg-gray-300"
+            }`}
           onClick={() => setActiveTab("tools")}
         >
           Tools
         </button>
         <button
-          className={`px-4 py-2 ${
-            activeTab === "editor" ? "bg-blue-500 text-white" : "bg-gray-300"
-          }`}
+          className={`px-4 py-2 ${activeTab === "editor" ? "bg-blue-500 text-white" : "bg-gray-300"
+            }`}
           onClick={() => setActiveTab("editor")}
         >
           Editor
@@ -81,9 +81,8 @@ const ChatGPT = () => {
           />
         ) : null}
         <div
-          className={`bg-white shadow-xl p-8 w-full md:w-[65%] rounded-lg flex flex-col  ${
-            activeTab === "tools" && !isDesktop ? "hidden" : ""
-          }`}
+          className={`bg-white shadow-xl p-8 w-full md:w-[65%] rounded-lg flex flex-col  ${activeTab === "tools" && !isDesktop ? "hidden" : ""
+            }`}
         >
           {activeTab === "editor" || isDesktop ? (
             <Editor

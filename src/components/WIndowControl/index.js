@@ -31,7 +31,7 @@ const WindowControl = ({
     : [
         {
           id: 1,
-          author: "Bot",
+          author: "Assistant",
           text: "Hello, how may I help you?",
         },
       ];
