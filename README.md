@@ -9,7 +9,6 @@
 - **Chat** to edit the email in a dialog
 - **Spellchecking** detects misspellings in realtime
 - **History** stores major changes to the text
-- **Quick edits** to quickly improve or change the formality of the email
 
 ## Tech Stack
 
@@ -32,6 +31,20 @@
   npm install
 ```
 
+### Environment Variables
+
+To run this project, you will need to add the following environment variables to your .env file
+
+`REACT_APP_OPENAI_API_KEY=`
+
+`REACT_APP_GOOGLE_API_KEY=`
+
+### Run Locally
+
+```bash
+  npm start
+```
+
 ## Authors
 
 - [@orthizar](https://github.com/orthizar)
@@ -44,6 +57,7 @@
 
 - [Prompt Engineering Guide](https://learnprompting.org/)
 - [LangChain Prompts](https://python.langchain.com/docs/modules/agents/how_to/custom_llm_agent)
+- [OpenAI](https://openai.com/)
 
 ## Contributing
 
