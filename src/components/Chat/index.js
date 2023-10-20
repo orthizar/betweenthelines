@@ -98,7 +98,7 @@ const Chat = ({
               ...messages,
               {
                 id: messages.length + 1,
-                author: "Bot",
+                author: "Assistant",
                 text: transformed,
               },
             ];
