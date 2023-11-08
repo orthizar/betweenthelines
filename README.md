@@ -52,6 +52,7 @@ To run this project, you will need to add the following environment variables to
 - [@Jahoo445](https://github.com/Jahoo445)
 - [@SupremeWaller007](https://github.com/SupremeWaller007)
 - [@kirthi-exe](https://github.com/kirthi-exe)
+- [@andrinnn6789](https://github.com/andrinnn6789)
 
 ## Acknowledgements
 
